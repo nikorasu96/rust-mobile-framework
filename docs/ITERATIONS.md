@@ -1394,9 +1394,20 @@ the reviewed update and reorder fixtures into Rust contract tests.
 
 ### Validation evidence
 
-Final Rust counts, CI evidence and benchmark measurements will be recorded after the exact branch
-passes formatting, strict Clippy, tests, rustdoc, architecture checks and release budgets. No new
-Python implementation is part of this increment.
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 31 tests, including seven reconciliation public contract tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | `rmf-reconciliation` still depends only on local `rmf-core` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 nodes × 100 iterations; all existing budgets passed |
+
+[GitHub Actions run 35610877714](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/35610877714)
+measured 64,021 ns average validation, 143,725 ns average mount and a 1,007,899-byte frame.
+These bootstrap workloads remain within budget but do not exercise stable property reconciliation;
+they are regression evidence, not a throughput claim for this increment. No new Python
+implementation was added.
 
 ### Next increment
 
