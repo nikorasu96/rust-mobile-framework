@@ -1254,4 +1254,31 @@ execution claim.
 ### Next increment
 
 Move a first reviewed surface-lifecycle fixture into a Rust integration contract test while
-extending the Rust runtime orchestration to consume the registry through a narrow internal port.
+extending the Rust runtime orchestration through a narrow use-case API.
+
+## 2026-09-21 — Runtime surface orchestration in Rust
+
+### Acceptance criteria
+
+- Make the runtime own the surface registry instead of requiring callers to compose it manually.
+- Route creation, exact-handle disposal and callback admission through explicit Rust use cases.
+- Guarantee that rejected callbacks cannot execute user code.
+- Translate reviewed lifecycle scenarios into integration tests against the public Rust API.
+
+### Delivered
+
+- Extended `Runtime<R>` with typed surface creation, disposal and callback dispatch operations.
+- Kept rendering behind the existing small `Renderer` port and surface state inside the runtime.
+- Used a one-shot callback so admission is checked immediately before a single invocation.
+- Added two integration tests reproducing create/callback/dispose, duplicate creation and stale
+  callback rejection after logical-slot replacement.
+
+### Validation evidence
+
+The final Rust test count, CI run, commit SHA and benchmark measurements are recorded after the
+branch passes formatting, strict Clippy, tests, rustdoc, architecture checks and release budgets.
+Python remains independent regression evidence and no new Python model was added.
+
+Rust's current [`FnOnce` documentation](https://doc.rust-lang.org/std/ops/trait.FnOnce.html) was
+reviewed on 2026-09-21. It matches this boundary because an admitted callback is invoked no more
+than once while still allowing callers to consume captured state.
