@@ -1,3 +1,5 @@
+#![doc = "Dependency-free release performance gate."]
+
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 use std::hint::black_box;
