@@ -1374,3 +1374,31 @@ Python remains independent regression evidence and no Python implementation was 
 
 Implement stable keyed and positional identity matching for existing snapshots, then translate
 the reviewed update and reorder fixtures into Rust contract tests.
+
+## 2026-09-21 — Stable-tree property reconciliation in Rust
+
+### Acceptance criteria
+
+- Preserve reconciler-owned identities for matching kind/key nodes at stable sibling positions.
+- Emit canonical property set/remove deltas without allocating replacement identities.
+- Advance revisions atomically, including a deterministic empty batch for an unchanged tree.
+- Reject every structural change before publishing state or exposing partial operations.
+
+### Delivered
+
+- Extended `Reconciler::prepare` to consume non-empty snapshots with stable structure.
+- Added a linear merge over canonical property sets for deterministic changed and removed IDs.
+- Rebuilt immutable committed paths while preserving every matching runtime identity.
+- Added Rust contracts for the reviewed property-update/removal cases, unchanged commits and
+  atomic key-change rejection.
+
+### Validation evidence
+
+Final Rust counts, CI evidence and benchmark measurements will be recorded after the exact branch
+passes formatting, strict Clippy, tests, rustdoc, architecture checks and release budgets. No new
+Python implementation is part of this increment.
+
+### Next increment
+
+Select and benchmark a non-quadratic child-order strategy, then implement structural insert,
+remove, replacement and keyed reorder with their reviewed Rust contracts.

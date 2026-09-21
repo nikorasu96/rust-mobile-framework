@@ -1,6 +1,6 @@
 # ADR-0003: Reconciliation crate boundary and public type contract
 
-- Status: Accepted; declarative input and initial-mount slice implemented, keyed updates pending
+- Status: Accepted; initial mount and stable-tree property updates implemented, structural updates pending
 - Date: 2026-09-20
 - Depends on: ADR-0001 and ADR-0002
 
@@ -11,9 +11,10 @@ runtime consumes a prepared commit. Implementing the algorithm before fixing thi
 would risk leaking mutable trees, caller-assigned identities or Android concerns into the
 domain. The executable v1 fixtures now provide enough evidence to freeze a small Rust API.
 
-This decision defines the implementation target. The crate now exists with its initial-mount
-slice compile-gated by the pinned toolchain. Incremental keyed reconciliation is still pending
-and is rejected explicitly rather than simulated by replacement or full remount.
+This decision defines the implementation target. The crate now supports initial mounting and
+property reconciliation while preserving identities for structurally stable keyed or positional
+nodes. Structural changes are still pending and are rejected explicitly rather than simulated by
+replacement or full remount.
 
 ## Decision
 

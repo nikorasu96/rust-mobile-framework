@@ -44,3 +44,4 @@ All notable changes follow semantic versioning once a public API is released.
 - Integrated surface creation, disposal and callback admission into the Rust runtime use case.
 - Added a runtime-ID-free declarative candidate model and typed validation in `rmf-core`.
 - Added deterministic initial-mount reconciliation and immutable snapshots in Rust.
+- Added property-only incremental reconciliation with stable runtime identity preservation.

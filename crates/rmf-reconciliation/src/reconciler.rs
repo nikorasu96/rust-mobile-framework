@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 use std::num::{NonZeroU32, NonZeroU64};
 
-use rmf_core::candidate::{DeclarativeNode, ValidatedTree};
+use rmf_core::candidate::{DeclarativeNode, PropertySet, ValidatedTree};
 
 use crate::types::{
     ChildIndex, CommittedNode, Mutation, MutationBatch, NodeId, PreparedCommit, SurfaceSnapshot,
@@ -54,8 +54,10 @@ pub enum ReconcileError {
         /// Configured maximum operation count.
         limit: u32,
     },
-    /// Incremental reconciliation is not part of this initial-mount increment.
-    IncrementalReconciliationUnavailable,
+    /// The candidate changes tree structure, which is outside the stable-tree increment.
+    StructuralChangeUnsupported,
+    /// Trusted canonical state violated an internal invariant.
+    InvariantViolation,
 }
 
 impl Display for ReconcileError {
@@ -70,9 +72,10 @@ impl Display for ReconcileError {
                     "mutation batch exceeds the {limit}-operation limit"
                 )
             }
-            Self::IncrementalReconciliationUnavailable => {
-                formatter.write_str("incremental reconciliation is not implemented")
-            }
+            Self::StructuralChangeUnsupported => formatter.write_str(
+                "structural insert, removal, replacement or reorder is not implemented",
+            ),
+            Self::InvariantViolation => formatter.write_str("reconciliation invariant violated"),
         }
     }
 }
@@ -103,36 +106,31 @@ impl Reconciler {
         current: &SurfaceSnapshot,
         candidate: &ValidatedTree,
     ) -> Result<PreparedCommit, ReconcileError> {
-        if current.root().is_some() {
-            return Err(ReconcileError::IncrementalReconciliationUnavailable);
-        }
         let target_revision = current
             .revision()
             .next()
             .ok_or(ReconcileError::RevisionExhausted)?;
-        let mut builder = InitialMountBuilder::new(
-            current
-                .next_identity()
-                .ok_or(ReconcileError::IdentityExhausted)?,
-            self.limits.max_operations,
-        );
-        let root = builder.create_subtree(candidate.root())?;
+        let mut builder = CommitBuilder::new(current.next_identity(), self.limits.max_operations);
+        let root = match current.root() {
+            Some(previous) => builder.reconcile_stable(previous, candidate.root())?,
+            None => builder.create_subtree(candidate.root())?,
+        };
         let batch = MutationBatch::new(current.revision(), target_revision, builder.operations);
         let snapshot = SurfaceSnapshot::new(target_revision, root, builder.next_node_id);
         Ok(PreparedCommit::new(batch, snapshot))
     }
 }
 
-struct InitialMountBuilder {
+struct CommitBuilder {
     next_node_id: Option<NonZeroU64>,
     operation_limit: NonZeroU32,
     operations: Vec<Mutation>,
 }
 
-impl InitialMountBuilder {
-    const fn new(next_node_id: NonZeroU64, operation_limit: NonZeroU32) -> Self {
+impl CommitBuilder {
+    const fn new(next_node_id: Option<NonZeroU64>, operation_limit: NonZeroU32) -> Self {
         Self {
-            next_node_id: Some(next_node_id),
+            next_node_id,
             operation_limit,
             operations: Vec::new(),
         }
@@ -177,6 +175,45 @@ impl InitialMountBuilder {
         ))
     }
 
+    fn reconcile_stable(
+        &mut self,
+        previous: &CommittedNode,
+        candidate: &DeclarativeNode,
+    ) -> Result<CommittedNode, ReconcileError> {
+        if previous.kind() != candidate.kind()
+            || previous.key() != candidate.key()
+            || previous.children().len() != candidate.children().len()
+        {
+            return Err(ReconcileError::StructuralChangeUnsupported);
+        }
+
+        let (set, remove) = property_delta(previous.properties(), candidate.properties())?;
+        if !set.entries().is_empty() || !remove.is_empty() {
+            self.push(Mutation::UpdateProperties {
+                node_id: previous.node_id(),
+                set,
+                remove,
+            })?;
+        }
+
+        let mut children = Vec::with_capacity(candidate.children().len());
+        for (previous_child, candidate_child) in previous
+            .children()
+            .iter()
+            .zip(candidate.children().iter())
+        {
+            children.push(self.reconcile_stable(previous_child, candidate_child)?);
+        }
+
+        Ok(CommittedNode::new(
+            previous.node_id(),
+            candidate.kind(),
+            candidate.key().cloned(),
+            candidate.properties().clone(),
+            children,
+        ))
+    }
+
     fn allocate_identity(&mut self) -> Result<NodeId, ReconcileError> {
         let current = self.next_node_id.ok_or(ReconcileError::IdentityExhausted)?;
         self.next_node_id = current.get().checked_add(1).and_then(NonZeroU64::new);
@@ -191,4 +228,51 @@ impl InitialMountBuilder {
         self.operations.push(mutation);
         Ok(())
     }
+}
+
+fn property_delta(
+    previous: &PropertySet,
+    candidate: &PropertySet,
+) -> Result<(PropertySet, Box<[rmf_core::candidate::PropertyId]>), ReconcileError> {
+    let previous_entries = previous.entries();
+    let candidate_entries = candidate.entries();
+    let mut changed = Vec::new();
+    let mut removed = Vec::new();
+    let mut previous_index = 0;
+    let mut candidate_index = 0;
+
+    while previous_index < previous_entries.len() || candidate_index < candidate_entries.len() {
+        match (
+            previous_entries.get(previous_index),
+            candidate_entries.get(candidate_index),
+        ) {
+            (Some(old), Some(new)) if old.id() == new.id() => {
+                if old.value() != new.value() {
+                    changed.push(new.clone());
+                }
+                previous_index += 1;
+                candidate_index += 1;
+            }
+            (Some(old), Some(new)) if old.id() < new.id() => {
+                removed.push(old.id());
+                previous_index += 1;
+            }
+            (Some(_), Some(new)) => {
+                changed.push(new.clone());
+                candidate_index += 1;
+            }
+            (Some(old), None) => {
+                removed.push(old.id());
+                previous_index += 1;
+            }
+            (None, Some(new)) => {
+                changed.push(new.clone());
+                candidate_index += 1;
+            }
+            (None, None) => break,
+        }
+    }
+
+    let set = PropertySet::new(changed).map_err(|_| ReconcileError::InvariantViolation)?;
+    Ok((set, removed.into_boxed_slice()))
 }
