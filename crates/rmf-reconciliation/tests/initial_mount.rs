@@ -100,8 +100,10 @@ fn identical_candidate_prepares_an_empty_incremental_batch() {
 
     let previous_root_id = first
         .root()
-        .map(rmf_reconciliation::CommittedNode::node_id)
-        .unwrap_or_else(|| unreachable!("fixture root exists"));
+        .map_or_else(
+            || unreachable!("fixture root exists"),
+            rmf_reconciliation::CommittedNode::node_id,
+        );
     let prepared = reconciler
         .prepare(&first, &candidate())
         .unwrap_or_else(|error| unreachable!("stable tree must prepare: {error}"));

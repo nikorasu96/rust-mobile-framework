@@ -51,8 +51,10 @@ fn updates_properties_while_preserving_keyed_identity() {
     let previous_id = current
         .root()
         .and_then(|root| root.children().first())
-        .map(rmf_reconciliation::CommittedNode::node_id)
-        .unwrap_or_else(|| unreachable!("fixture child exists"));
+        .map_or_else(
+            || unreachable!("fixture child exists"),
+            rmf_reconciliation::CommittedNode::node_id,
+        );
     let new = properties(vec![PropertyEntry::new(
         property_id(1),
         PropertyValue::String(String::from("New")),
