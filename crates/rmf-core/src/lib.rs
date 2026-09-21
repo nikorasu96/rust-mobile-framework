@@ -4,6 +4,8 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 
+pub mod candidate;
+
 /// Stable identity of a node within a UI tree.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct NodeId(u64);

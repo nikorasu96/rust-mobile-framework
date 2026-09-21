@@ -1293,3 +1293,32 @@ added.
 Rust's current [`FnOnce` documentation](https://doc.rust-lang.org/std/ops/trait.FnOnce.html) was
 reviewed on 2026-09-21. It matches this boundary because an admitted callback is invoked no more
 than once while still allowing callers to consume captured state.
+
+## 2026-09-21 — Declarative candidate model in Rust
+
+### Acceptance criteria
+
+- Remove caller-assigned runtime node identities from the next reconciliation input model.
+- Represent component kinds and property values as closed Rust types.
+- Canonicalize property order and reject duplicate property identities before reconciliation.
+- Enforce component schemas, finite floats, sibling-key uniqueness and defensive tree limits.
+
+### Delivered
+
+- Added `rmf_core::candidate` with `DeclarativeNode`, opaque `Key`, `ComponentKind`, typed
+  properties and an opaque `ValidatedTree`.
+- Added finite canonical floating-point values and positive property identities.
+- Added fail-closed validation for the v1 `View` and `Text` schemas, text leaves, duplicate keys,
+  depth, total nodes, direct children, property count and UTF-8 string bytes.
+- Added nine Rust unit tests, including `Send + Sync` assertions and the initial candidate shape.
+
+### Validation evidence
+
+The final Rust test count, CI run and benchmark measurements are recorded after the exact branch
+passes formatting, strict Clippy, tests, rustdoc, architecture checks and release budgets. No new
+Python implementation was added; the existing oracle remains independent comparison evidence.
+
+### Next increment
+
+Create `rmf-reconciliation` with the immutable snapshot and deterministic initial-mount batch,
+consuming only `ValidatedTree` through the accepted inward dependency boundary.

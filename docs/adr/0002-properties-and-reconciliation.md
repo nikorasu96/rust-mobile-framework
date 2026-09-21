@@ -1,6 +1,6 @@
 # ADR-0002: Immutable properties and deterministic reconciliation
 
-- Status: Accepted for implementation after the Rust build gate passes
+- Status: Accepted; declarative candidate model implemented, reconciliation pending
 - Date: 2026-09-19
 - Supersedes: the bootstrap assumption that callers assign every `NodeId`
 
@@ -151,4 +151,3 @@ happen before a stable facade or Android adapter is built.
 - [React Native: Render, Commit, and Mount](https://reactnative.dev/architecture/render-pipeline)
 - [React Native: Fabric](https://reactnative.dev/architecture/fabric-renderer)
 - [React: Preserving and Resetting State](https://react.dev/learn/preserving-and-resetting-state)
-
