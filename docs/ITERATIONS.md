@@ -1275,9 +1275,20 @@ extending the Rust runtime orchestration through a narrow use-case API.
 
 ### Validation evidence
 
-The final Rust test count, CI run, commit SHA and benchmark measurements are recorded after the
-branch passes formatting, strict Clippy, tests, rustdoc, architecture checks and release budgets.
-Python remains independent regression evidence and no new Python model was added.
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 15 tests, including two public-API lifecycle integration tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 nodes × 100 iterations; all budgets passed |
+
+[GitHub Actions run 35571454036](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/35571454036)
+measured 69,993 ns average validation, 149,924 ns average mount and a 1,007,899-byte frame.
+The prior run measured 50,141 ns and 104,980 ns on another shared runner; both remain far below
+the 1 ms and 2 ms provisional budgets. Host variance prevents treating that difference as a
+runtime regression. Python remains independent regression evidence and no new Python model was
+added.
 
 Rust's current [`FnOnce` documentation](https://doc.rust-lang.org/std/ops/trait.FnOnce.html) was
 reviewed on 2026-09-21. It matches this boundary because an admitted callback is invoked no more
