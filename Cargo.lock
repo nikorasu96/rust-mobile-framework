@@ -33,6 +33,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rmf-reconciliation"
+version = "0.1.0-alpha.1"
+dependencies = [
+ "rmf-core",
+]
+
+[[package]]
 name = "rmf-runtime"
 version = "0.1.0-alpha.1"
 dependencies = [

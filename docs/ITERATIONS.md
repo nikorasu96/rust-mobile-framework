@@ -1333,3 +1333,44 @@ independent comparison evidence.
 
 Create `rmf-reconciliation` with the immutable snapshot and deterministic initial-mount batch,
 consuming only `ValidatedTree` through the accepted inward dependency boundary.
+
+## 2026-09-21 — Deterministic initial-mount reconciliation in Rust
+
+### Acceptance criteria
+
+- Add the `rmf-reconciliation` core-service crate with only `rmf-core` as a dependency.
+- Assign positive runtime identities internally and never accept caller-created IDs.
+- Prepare an immutable snapshot and topologically ordered initial-mount batch atomically.
+- Reject operation-limit overflow and non-empty snapshots with typed errors.
+
+### Delivered
+
+- Added opaque `NodeId`, `Revision` and `ChildIndex` values plus immutable `Arc`-backed committed
+  nodes and surface snapshots.
+- Added the six-operation public mutation vocabulary and atomic `PreparedCommit` ownership.
+- Implemented deterministic parent-first creation, property initialization and child insertion
+  from `ValidatedTree` without host side effects.
+- Added public Rust contract tests for the reviewed initial-mount fixture, atomic limit rejection,
+  explicit incremental-update rejection and `Send + Sync` guarantees.
+
+### Validation evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 28 tests, including four reconciliation public contract tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | New core-service depends only on local `rmf-core` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 nodes × 100 iterations; all budgets passed |
+
+[GitHub Actions run 35604120960](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/35604120960)
+measured 72,203 ns average validation, 151,750 ns average mount and a 1,007,899-byte frame.
+These existing bootstrap workloads remain within budget but do not yet measure the new
+reconciliation path; a dedicated mutation benchmark remains required before performance claims.
+Python remains independent regression evidence and no Python implementation was added.
+
+### Next increment
+
+Implement stable keyed and positional identity matching for existing snapshots, then translate
+the reviewed update and reorder fixtures into Rust contract tests.
