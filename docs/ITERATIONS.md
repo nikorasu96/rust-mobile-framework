@@ -1355,9 +1355,20 @@ consuming only `ValidatedTree` through the accepted inward dependency boundary.
 
 ### Validation evidence
 
-Final Rust counts, CI evidence and benchmark measurements will be recorded after the exact branch
-passes formatting, strict Clippy, tests, rustdoc, architecture checks and release budgets. Python
-remains independent regression evidence and no Python implementation is added by this increment.
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 28 tests, including four reconciliation public contract tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | New core-service depends only on local `rmf-core` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 nodes × 100 iterations; all budgets passed |
+
+[GitHub Actions run 35604120960](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/35604120960)
+measured 72,203 ns average validation, 151,750 ns average mount and a 1,007,899-byte frame.
+These existing bootstrap workloads remain within budget but do not yet measure the new
+reconciliation path; a dedicated mutation benchmark remains required before performance claims.
+Python remains independent regression evidence and no Python implementation was added.
 
 ### Next increment
 
