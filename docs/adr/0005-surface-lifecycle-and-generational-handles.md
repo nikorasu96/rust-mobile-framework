@@ -1,6 +1,6 @@
 # ADR-0005: Surface lifecycle and generational handles
 
-- Status: Accepted contract; Rust implementation blocked by TD-001 and TD-005
+- Status: Accepted; runtime registry implemented in Rust
 - Date: 2026-09-20
 - Depends on: ADR-0003 and ADR-0004
 
@@ -64,7 +64,9 @@ creation, duplicate rejection, disposal, stale callback rejection and allocator 
 
 `contracts/surface-lifecycle/v1` covers creation, exact callback routing, disposal, logical-slot
 reuse, stale callback/disposal rejection, isolation between surfaces and allocator exhaustion.
-The dependency-free Python model is an executable specification, not production runtime code.
+The dependency-free Python model remains an independent executable specification. Production
+identity allocation, creation, disposal and callback admission are implemented in
+`rmf-runtime::surface` and verified with the pinned Rust toolchain in CI.
 
 ## Consequences
 

@@ -1214,3 +1214,44 @@ execution. No dependency or critical debt was added.
 
 Add bounded exhaustive exploration of composed start, native result, callback and close
 interleavings before translating the contract into Kotlin/JNI source.
+
+## 2026-09-21 — Rust generational surface registry
+
+### Acceptance criteria
+
+- Replace the surface-lifecycle specification gap with safe production Rust in `rmf-runtime`.
+- Make zero identities, duplicate logical slots, stale generations and allocator exhaustion
+  explicit typed failures without panic or `unsafe`.
+- Preserve the independent contract evidence while making Rust CI mandatory before `main`.
+- Verify formatting, Clippy, tests, rustdoc, architecture and the release benchmark remotely.
+
+### Delivered
+
+- Added `SurfaceId`, opaque monotonic generations, complete handles and a serialized registry.
+- Added exact-handle callback admission and disposal, logical-slot reuse isolation and explicit
+  `u64` exhaustion without generation wraparound.
+- Added six Rust unit tests, including compile-time `Send + Sync` checks.
+- Added a pinned GitHub Actions gate because the local execution image has no Rust toolchain.
+
+### Validation evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting | Passed | Rust 1.85.0 `cargo fmt --all --check` in GitHub Actions |
+| Rust linting | Passed | Strict workspace Clippy with all targets/features and `-D warnings` |
+| Rust tests | Passed | 13 tests: four core, seven runtime and two headless-adapter tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` and no dependencies |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 nodes × 100 iterations; all three budgets passed |
+
+The validated run measured 50,141 ns average tree validation, 104,980 ns average headless mount
+and a 1,007,899-byte frame. The result is recorded in
+[GitHub Actions run 35567268665](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/35567268665).
+Python remains independent test support and is not the production implementation. Android,
+Kotlin, Gradle, ADB and the Android SDK remain unavailable, so this increment makes no Android
+execution claim.
+
+### Next increment
+
+Move a first reviewed surface-lifecycle fixture into a Rust integration contract test while
+extending the Rust runtime orchestration to consume the registry through a narrow internal port.

@@ -65,6 +65,8 @@ python3 scripts/check_android_ffi_mutations.py
 cargo run --release -p rmf-bench
 ```
 
+The same Rust gates run on every pull request before an increment can reach `main`.
+
 Run the first vertical slice:
 
 ```bash

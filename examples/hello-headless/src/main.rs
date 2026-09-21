@@ -1,3 +1,5 @@
+#![doc = "Executable headless composition-root example."]
+
 use std::error::Error;
 
 use rmf_core::{Element, NodeId, UiNode, UiTree};
@@ -23,4 +25,3 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-
