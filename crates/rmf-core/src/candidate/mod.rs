@@ -493,9 +493,9 @@ fn validate_properties(
 
 const fn property_schema(kind: ComponentKind, property_id: PropertyId) -> Option<PropertyType> {
     match (kind, property_id.get()) {
-        (ComponentKind::View, 2) | (ComponentKind::Text, 2) => Some(PropertyType::Bool),
+        (ComponentKind::View | ComponentKind::Text, 2) => Some(PropertyType::Bool),
         (ComponentKind::View, 3) => Some(PropertyType::I64),
-        (ComponentKind::View, 4) | (ComponentKind::Text, 4) => Some(PropertyType::F64),
+        (ComponentKind::View | ComponentKind::Text, 4) => Some(PropertyType::F64),
         (ComponentKind::Text, 1) => Some(PropertyType::String),
         _ => None,
     }
