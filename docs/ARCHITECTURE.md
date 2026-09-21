@@ -9,8 +9,8 @@ rmf-core <- rmf-reconciliation <- rmf-runtime <- platform/render adapters <- com
 `rmf-core` owns declarative values and validation. Its `candidate` module removes
 caller-assigned runtime identities and enforces the closed v1 property schema and defensive
 tree limits. `rmf-reconciliation` owns runtime identities, immutable snapshots and pure mutation
-calculation. Its first production slice implements deterministic initial mounts; incremental
-keyed reconciliation remains unavailable through an explicit typed error. `rmf-runtime` owns application
+calculation. It implements deterministic initial mounts plus property-only updates for structurally
+stable trees; structural changes remain unavailable through an explicit typed error. `rmf-runtime` owns application
 orchestration and outbound ports. Adapters implement those ports. Composition roots select
 concrete adapters and are the only place allowed to wire them.
 

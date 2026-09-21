@@ -88,7 +88,7 @@ fn operation_limit_rejects_the_whole_preparation_without_changing_current() {
 }
 
 #[test]
-fn refuses_to_treat_a_committed_snapshot_as_an_initial_mount() {
+fn identical_candidate_prepares_an_empty_incremental_batch() {
     let reconciler = Reconciler::new(
         ReconcileLimits::new(10)
             .unwrap_or_else(|error| unreachable!("positive fixture limit: {error}")),
@@ -98,9 +98,23 @@ fn refuses_to_treat_a_committed_snapshot_as_an_initial_mount() {
         .unwrap_or_else(|error| unreachable!("initial mount must prepare: {error}"))
         .into_snapshot();
 
+    let previous_root_id = first.root().map_or_else(
+        || unreachable!("fixture root exists"),
+        rmf_reconciliation::CommittedNode::node_id,
+    );
+    let prepared = reconciler
+        .prepare(&first, &candidate())
+        .unwrap_or_else(|error| unreachable!("stable tree must prepare: {error}"));
+
+    assert!(prepared.batch().operations().is_empty());
+    assert_eq!(prepared.batch().base_revision().get(), 1);
+    assert_eq!(prepared.batch().target_revision().get(), 2);
     assert_eq!(
-        reconciler.prepare(&first, &candidate()),
-        Err(ReconcileError::IncrementalReconciliationUnavailable)
+        prepared
+            .into_snapshot()
+            .root()
+            .map(rmf_reconciliation::CommittedNode::node_id),
+        Some(previous_root_id)
     );
 }
 

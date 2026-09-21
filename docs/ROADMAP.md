@@ -20,6 +20,7 @@
 - [x] Define the reconciliation crate boundary, ownership and public type contract.
 - [x] Implement the validated declarative candidate model without caller-assigned runtime IDs.
 - [x] Implement deterministic initial-mount reconciliation and immutable snapshots in Rust.
+- [x] Preserve identities and reconcile properties on structurally stable trees.
 - [x] Specify commit application, promotion and full-remount recovery semantics.
 - [x] Add deterministic generated tests for commit-state safety invariants.
 - [x] Exhaustively explore bounded commit-state transitions and recovery boundaries.

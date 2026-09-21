@@ -1374,3 +1374,42 @@ Python remains independent regression evidence and no Python implementation was 
 
 Implement stable keyed and positional identity matching for existing snapshots, then translate
 the reviewed update and reorder fixtures into Rust contract tests.
+
+## 2026-09-21 — Stable-tree property reconciliation in Rust
+
+### Acceptance criteria
+
+- Preserve reconciler-owned identities for matching kind/key nodes at stable sibling positions.
+- Emit canonical property set/remove deltas without allocating replacement identities.
+- Advance revisions atomically, including a deterministic empty batch for an unchanged tree.
+- Reject every structural change before publishing state or exposing partial operations.
+
+### Delivered
+
+- Extended `Reconciler::prepare` to consume non-empty snapshots with stable structure.
+- Added a linear merge over canonical property sets for deterministic changed and removed IDs.
+- Rebuilt immutable committed paths while preserving every matching runtime identity.
+- Added Rust contracts for the reviewed property-update/removal cases, unchanged commits and
+  atomic key-change rejection.
+
+### Validation evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 31 tests, including seven reconciliation public contract tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | `rmf-reconciliation` still depends only on local `rmf-core` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 nodes × 100 iterations; all existing budgets passed |
+
+[GitHub Actions run 35610877714](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/35610877714)
+measured 64,021 ns average validation, 143,725 ns average mount and a 1,007,899-byte frame.
+These bootstrap workloads remain within budget but do not exercise stable property reconciliation;
+they are regression evidence, not a throughput claim for this increment. No new Python
+implementation was added.
+
+### Next increment
+
+Select and benchmark a non-quadratic child-order strategy, then implement structural insert,
+remove, replacement and keyed reorder with their reviewed Rust contracts.
