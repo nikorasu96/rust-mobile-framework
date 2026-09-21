@@ -269,15 +269,9 @@ impl SingleMove {
     const fn previous_index(self, candidate_index: usize) -> usize {
         if candidate_index == self.to {
             self.from
-        } else if self.from < self.to
-            && candidate_index >= self.from
-            && candidate_index < self.to
-        {
+        } else if self.from < self.to && candidate_index >= self.from && candidate_index < self.to {
             candidate_index + 1
-        } else if self.from > self.to
-            && candidate_index > self.to
-            && candidate_index <= self.from
-        {
+        } else if self.from > self.to && candidate_index > self.to && candidate_index <= self.from {
             candidate_index - 1
         } else {
             candidate_index
@@ -339,11 +333,14 @@ fn single_move_matches(
     candidate: &[DeclarativeNode],
     movement: SingleMove,
 ) -> bool {
-    candidate.iter().enumerate().all(|(candidate_index, candidate)| {
-        let previous_index = movement.previous_index(candidate_index);
-        previous[previous_index].key().is_some()
-            && previous[previous_index].key() == candidate.key()
-    })
+    candidate
+        .iter()
+        .enumerate()
+        .all(|(candidate_index, candidate)| {
+            let previous_index = movement.previous_index(candidate_index);
+            previous[previous_index].key().is_some()
+                && previous[previous_index].key() == candidate.key()
+        })
 }
 
 fn property_delta(
