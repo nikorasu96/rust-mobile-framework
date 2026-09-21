@@ -72,9 +72,8 @@ impl Display for ReconcileError {
                     "mutation batch exceeds the {limit}-operation limit"
                 )
             }
-            Self::StructuralChangeUnsupported => formatter.write_str(
-                "structural insert, removal, replacement or reorder is not implemented",
-            ),
+            Self::StructuralChangeUnsupported => formatter
+                .write_str("structural insert, removal, replacement or reorder is not implemented"),
             Self::InvariantViolation => formatter.write_str("reconciliation invariant violated"),
         }
     }
@@ -197,10 +196,8 @@ impl CommitBuilder {
         }
 
         let mut children = Vec::with_capacity(candidate.children().len());
-        for (previous_child, candidate_child) in previous
-            .children()
-            .iter()
-            .zip(candidate.children().iter())
+        for (previous_child, candidate_child) in
+            previous.children().iter().zip(candidate.children().iter())
         {
             children.push(self.reconcile_stable(previous_child, candidate_child)?);
         }
