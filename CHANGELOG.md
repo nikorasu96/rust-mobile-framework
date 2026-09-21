@@ -43,3 +43,4 @@ All notable changes follow semantic versioning once a public API is released.
 - Implemented the ADR-0005 generational surface registry in safe Rust with CI build gates.
 - Integrated surface creation, disposal and callback admission into the Rust runtime use case.
 - Added a runtime-ID-free declarative candidate model and typed validation in `rmf-core`.
+- Added deterministic initial-mount reconciliation and immutable snapshots in Rust.

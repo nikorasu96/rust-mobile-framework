@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/rmf-core",
+    "crates/rmf-reconciliation",
     "crates/rmf-runtime",
     "adapters/rmf-renderer-headless",
     "benchmarks/rmf-bench",

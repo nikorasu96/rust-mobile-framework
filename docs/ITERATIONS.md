@@ -1333,3 +1333,33 @@ independent comparison evidence.
 
 Create `rmf-reconciliation` with the immutable snapshot and deterministic initial-mount batch,
 consuming only `ValidatedTree` through the accepted inward dependency boundary.
+
+## 2026-09-21 — Deterministic initial-mount reconciliation in Rust
+
+### Acceptance criteria
+
+- Add the `rmf-reconciliation` core-service crate with only `rmf-core` as a dependency.
+- Assign positive runtime identities internally and never accept caller-created IDs.
+- Prepare an immutable snapshot and topologically ordered initial-mount batch atomically.
+- Reject operation-limit overflow and non-empty snapshots with typed errors.
+
+### Delivered
+
+- Added opaque `NodeId`, `Revision` and `ChildIndex` values plus immutable `Arc`-backed committed
+  nodes and surface snapshots.
+- Added the six-operation public mutation vocabulary and atomic `PreparedCommit` ownership.
+- Implemented deterministic parent-first creation, property initialization and child insertion
+  from `ValidatedTree` without host side effects.
+- Added public Rust contract tests for the reviewed initial-mount fixture, atomic limit rejection,
+  explicit incremental-update rejection and `Send + Sync` guarantees.
+
+### Validation evidence
+
+Final Rust counts, CI evidence and benchmark measurements will be recorded after the exact branch
+passes formatting, strict Clippy, tests, rustdoc, architecture checks and release budgets. Python
+remains independent regression evidence and no Python implementation is added by this increment.
+
+### Next increment
+
+Implement stable keyed and positional identity matching for existing snapshots, then translate
+the reviewed update and reorder fixtures into Rust contract tests.
