@@ -1,0 +1,19 @@
+{
+  "contract_version": 1,
+  "name": "reject-payload-for-dispose",
+  "input": {
+    "abi_version": 1,
+    "operation": 2,
+    "request_id": 4,
+    "surface_id": 7,
+    "generation": 2,
+    "payload_hex": "00",
+    "caller_thread": "main"
+  },
+  "expected": {
+    "result": "rejected",
+    "status": 102,
+    "code": "INVALID_ARGUMENT"
+  }
+}
+

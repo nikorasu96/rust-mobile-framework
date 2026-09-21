@@ -1,0 +1,23 @@
+{
+  "contract_version": 1,
+  "name": "partial-failure-blocks-commit",
+  "initial": {"state": "ready", "revision": 2},
+  "actions": [
+    {"op": "begin_apply", "base_revision": 2, "target_revision": 3},
+    {"op": "host_failed", "code": "NATIVE_OPERATION_FAILED"},
+    {"op": "begin_apply", "base_revision": 2, "target_revision": 3}
+  ],
+  "expected": {
+    "outputs": [
+      {"result": "apply_started", "base_revision": 2, "target_revision": 3},
+      {"result": "recovery_required", "code": "NATIVE_OPERATION_FAILED", "revision": 2},
+      {"result": "rejected", "code": "RECOVERY_REQUIRED"}
+    ],
+    "final": {
+      "state": "failed",
+      "revision": 2,
+      "attempted_revision": 3,
+      "failure_code": "NATIVE_OPERATION_FAILED"
+    }
+  }
+}

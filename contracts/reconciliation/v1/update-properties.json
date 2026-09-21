@@ -1,0 +1,47 @@
+{
+  "contract_version": 1,
+  "name": "update-properties",
+  "base_revision": 1,
+  "target_revision": 2,
+  "allocator_next_id": 3,
+  "previous": {
+    "revision": 1,
+    "root": {
+      "node_id": 1,
+      "kind": "View",
+      "key": null,
+      "properties": {},
+      "children": [
+        {"node_id": 2, "kind": "Text", "key": "status", "properties": {"1": {"type": "string", "value": "Old"}}, "children": []}
+      ]
+    }
+  },
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {},
+    "children": [
+      {"kind": "Text", "key": "status", "properties": {"1": {"type": "string", "value": "New"}}, "children": []}
+    ]
+  },
+  "expected": {
+    "result": "batch",
+    "operations": [
+      {"op": "UpdateProperties", "node_id": 2, "set": {"1": {"type": "string", "value": "New"}}, "remove": []}
+    ],
+    "committed": {
+      "revision": 2,
+      "root": {
+        "node_id": 1,
+        "kind": "View",
+        "key": null,
+        "properties": {},
+        "children": [
+          {"node_id": 2, "kind": "Text", "key": "status", "properties": {"1": {"type": "string", "value": "New"}}, "children": []}
+        ]
+      }
+    },
+    "next_node_id": 3
+  }
+}
+

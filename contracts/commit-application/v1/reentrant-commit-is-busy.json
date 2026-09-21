@@ -1,0 +1,18 @@
+{
+  "contract_version": 1,
+  "name": "reentrant-commit-is-busy",
+  "initial": {"state": "ready", "revision": 10},
+  "actions": [
+    {"op": "begin_apply", "base_revision": 10, "target_revision": 11},
+    {"op": "begin_apply", "base_revision": 10, "target_revision": 11},
+    {"op": "host_applied"}
+  ],
+  "expected": {
+    "outputs": [
+      {"result": "apply_started", "base_revision": 10, "target_revision": 11},
+      {"result": "rejected", "code": "SURFACE_BUSY"},
+      {"result": "commit_promoted", "revision": 11}
+    ],
+    "final": {"state": "ready", "revision": 11}
+  }
+}

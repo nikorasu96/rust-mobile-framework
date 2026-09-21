@@ -1,0 +1,22 @@
+{
+  "contract_version": 1,
+  "name": "main thread lifecycle delivers callbacks before close",
+  "actions": [
+    {"type": "request_create", "caller_thread": "main"},
+    {"type": "native_create_succeeded", "caller_thread": "main", "surface_id": 7, "generation": 12},
+    {"type": "native_callback", "caller_thread": "main", "surface_id": 7, "generation": 12, "sequence": 1},
+    {"type": "request_close", "caller_thread": "main"},
+    {"type": "native_dispose_succeeded", "caller_thread": "main"}
+  ],
+  "expected": {
+    "final_state": {"state": "CLOSED", "handle": null, "last_sequence": 1, "failure": null, "queued_from": null},
+    "effects": [
+      {"type": "CALL_NATIVE_CREATE"},
+      {"type": "NONE"},
+      {"type": "DELIVER_CALLBACK", "sequence": 1},
+      {"type": "CALL_NATIVE_DISPOSE", "surface_id": 7, "generation": 12},
+      {"type": "NONE"}
+    ],
+    "error": null
+  }
+}

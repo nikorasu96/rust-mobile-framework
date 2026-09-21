@@ -1,0 +1,44 @@
+{
+  "contract_version": 1,
+  "threading": "main_only",
+  "actions": [
+    "begin",
+    "native_create_succeeded",
+    "native_create_failed",
+    "close",
+    "callback"
+  ],
+  "outcomes": [
+    "CREATE_REQUESTED",
+    "SURFACE_ACTIVE",
+    "START_FAILED",
+    "CLOSE_WAITING_NATIVE",
+    "LATE_SURFACE_DISPOSED",
+    "CLOSED",
+    "CALLBACK_DELIVERED",
+    "CALLBACK_DROPPED",
+    "NONE"
+  ],
+  "errors": [
+    "INVALID_ACTION",
+    "WRONG_THREAD",
+    "INVALID_TRANSITION",
+    "INVALID_ID",
+    "INTERNAL_INVARIANT"
+  ],
+  "ordering": [
+    "claim_container_before_attach_root",
+    "attach_root_before_native_surface_create",
+    "validate_surface_handle_before_facade_callback",
+    "dispose_exact_surface_before_terminal_close"
+  ],
+  "invariants": [
+    "active_facade_has_exact_attached_root_and_live_surface",
+    "close_releases_only_the_owned_root",
+    "late_create_after_close_is_immediately_disposed",
+    "failed_start_leaves_no_owned_container_or_surface",
+    "stale_callbacks_never_reach_the_facade",
+    "foreign_container_and_surface_ownership_is_preserved",
+    "all_composition_actions_run_on_main"
+  ]
+}

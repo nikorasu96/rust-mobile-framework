@@ -1,0 +1,14 @@
+{
+  "contract_version": 1,
+  "name": "reject-missing-node-field",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "previous": null,
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {}
+  },
+  "expected": {"result": "error", "code": "INVALID_NODE_STRUCTURE"}
+}

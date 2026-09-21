@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "components": {
+    "View": {
+      "2": {"name": "accessibility_hidden", "type": "bool"},
+      "3": {"name": "z_index", "type": "i64"},
+      "4": {"name": "opacity", "type": "f64"}
+    },
+    "Text": {
+      "1": {"name": "content", "type": "string"},
+      "2": {"name": "accessibility_hidden", "type": "bool"},
+      "4": {"name": "opacity", "type": "f64"}
+    }
+  }
+}

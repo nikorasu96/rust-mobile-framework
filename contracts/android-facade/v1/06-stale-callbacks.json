@@ -1,0 +1,22 @@
+{
+  "contract_version": 1,
+  "name": "stale handles and replayed sequences are dropped",
+  "actions": [
+    {"type": "request_create", "caller_thread": "main"},
+    {"type": "native_create_succeeded", "caller_thread": "main", "surface_id": 7, "generation": 12},
+    {"type": "native_callback", "caller_thread": "main", "surface_id": 7, "generation": 11, "sequence": 1},
+    {"type": "native_callback", "caller_thread": "main", "surface_id": 7, "generation": 12, "sequence": 2},
+    {"type": "native_callback", "caller_thread": "main", "surface_id": 7, "generation": 12, "sequence": 2}
+  ],
+  "expected": {
+    "final_state": {"state": "ACTIVE", "handle": {"surface_id": 7, "generation": 12}, "last_sequence": 2, "failure": null, "queued_from": null},
+    "effects": [
+      {"type": "CALL_NATIVE_CREATE"},
+      {"type": "NONE"},
+      {"type": "DROP_CALLBACK"},
+      {"type": "DELIVER_CALLBACK", "sequence": 2},
+      {"type": "DROP_CALLBACK"}
+    ],
+    "error": null
+  }
+}

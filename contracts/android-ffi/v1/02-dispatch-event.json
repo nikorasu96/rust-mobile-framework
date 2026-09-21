@@ -1,0 +1,30 @@
+{
+  "contract_version": 1,
+  "name": "dispatch-event-with-complete-handle",
+  "input": {
+    "abi_version": 1,
+    "operation": 3,
+    "request_id": 9,
+    "surface_id": 7,
+    "generation": 12,
+    "payload_hex": "524d50310100030018000000000000002a0000000000000001000000010000000000000000000000",
+    "caller_thread": "main"
+  },
+  "expected": {
+    "result": "accepted",
+    "status": 0,
+    "code": "OK",
+    "request": {
+      "operation": "DISPATCH_EVENT",
+      "request_id": 9,
+      "surface_id": 7,
+      "generation": 12,
+      "payload_bytes": 40,
+      "payload": {
+        "node_id": 42,
+        "event": "CLICK",
+        "sequence": 1
+      }
+    }
+  }
+}

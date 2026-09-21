@@ -1,0 +1,82 @@
+{
+  "contract_version": 1,
+  "scenarios": [
+    {
+      "name": "happy-path-callback-and-close",
+      "actions": [
+        {"type": "begin", "caller_thread": "main", "container_id": 1, "host_id": 10, "surface_id": 100, "root_id": 1000},
+        {"type": "native_create_succeeded", "caller_thread": "main"},
+        {"type": "callback", "caller_thread": "main", "surface_id": 100, "generation": 1, "sequence": 1},
+        {"type": "close", "caller_thread": "main"}
+      ],
+      "outcomes": ["CREATE_REQUESTED", "SURFACE_ACTIVE", "CALLBACK_DELIVERED", "CLOSED"],
+      "errors": [null, null, null, null],
+      "final": {"facade": "CLOSED", "bindings": 0, "active_surfaces": 0, "mount_owned": false}
+    },
+    {
+      "name": "close-before-native-success",
+      "actions": [
+        {"type": "begin", "caller_thread": "main", "container_id": 2, "host_id": 20, "surface_id": 200, "root_id": 2000},
+        {"type": "close", "caller_thread": "main"},
+        {"type": "native_create_succeeded", "caller_thread": "main"}
+      ],
+      "outcomes": ["CREATE_REQUESTED", "CLOSE_WAITING_NATIVE", "LATE_SURFACE_DISPOSED"],
+      "errors": [null, null, null],
+      "final": {"facade": "CLOSED", "bindings": 0, "active_surfaces": 0, "mount_owned": false}
+    },
+    {
+      "name": "native-create-failure-cleans-root",
+      "actions": [
+        {"type": "begin", "caller_thread": "main", "container_id": 3, "host_id": 30, "surface_id": 300, "root_id": 3000},
+        {"type": "native_create_failed", "caller_thread": "main", "reason": "HOST_INTERNAL"}
+      ],
+      "outcomes": ["CREATE_REQUESTED", "START_FAILED"],
+      "errors": [null, null],
+      "final": {"facade": "FAILED", "bindings": 0, "active_surfaces": 0, "mount_owned": false}
+    },
+    {
+      "name": "wrong-generation-callback-is-dropped",
+      "actions": [
+        {"type": "begin", "caller_thread": "main", "container_id": 4, "host_id": 40, "surface_id": 400, "root_id": 4000},
+        {"type": "native_create_succeeded", "caller_thread": "main"},
+        {"type": "callback", "caller_thread": "main", "surface_id": 400, "generation": 2, "sequence": 1}
+      ],
+      "outcomes": ["CREATE_REQUESTED", "SURFACE_ACTIVE", "CALLBACK_DROPPED"],
+      "errors": [null, null, null],
+      "final": {"facade": "ACTIVE", "bindings": 1, "active_surfaces": 1, "mount_owned": true}
+    },
+    {
+      "name": "callback-after-close-is-dropped",
+      "actions": [
+        {"type": "begin", "caller_thread": "main", "container_id": 5, "host_id": 50, "surface_id": 500, "root_id": 5000},
+        {"type": "native_create_succeeded", "caller_thread": "main"},
+        {"type": "close", "caller_thread": "main"},
+        {"type": "callback", "caller_thread": "main", "surface_id": 500, "generation": 1, "sequence": 1}
+      ],
+      "outcomes": ["CREATE_REQUESTED", "SURFACE_ACTIVE", "CLOSED", "CALLBACK_DROPPED"],
+      "errors": [null, null, null, null],
+      "final": {"facade": "CLOSED", "bindings": 0, "active_surfaces": 0, "mount_owned": false}
+    },
+    {
+      "name": "repeated-close-is-idempotent",
+      "actions": [
+        {"type": "begin", "caller_thread": "main", "container_id": 6, "host_id": 60, "surface_id": 600, "root_id": 6000},
+        {"type": "native_create_succeeded", "caller_thread": "main"},
+        {"type": "close", "caller_thread": "main"},
+        {"type": "close", "caller_thread": "main"}
+      ],
+      "outcomes": ["CREATE_REQUESTED", "SURFACE_ACTIVE", "CLOSED", "NONE"],
+      "errors": [null, null, null, null],
+      "final": {"facade": "CLOSED", "bindings": 0, "active_surfaces": 0, "mount_owned": false}
+    },
+    {
+      "name": "worker-action-rejects-atomically",
+      "actions": [
+        {"type": "begin", "caller_thread": "worker", "container_id": 7, "host_id": 70, "surface_id": 700, "root_id": 7000}
+      ],
+      "outcomes": [null],
+      "errors": ["WRONG_THREAD"],
+      "final": {"facade": "NEW", "bindings": 0, "active_surfaces": 0, "mount_owned": false}
+    }
+  ]
+}

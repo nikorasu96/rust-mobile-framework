@@ -1,0 +1,15 @@
+{
+  "contract_version": 1,
+  "name": "reject-invalid-node-field-type",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "previous": null,
+  "candidate": {
+    "kind": "View",
+    "key": 7,
+    "properties": {},
+    "children": []
+  },
+  "expected": {"result": "error", "code": "INVALID_NODE_STRUCTURE"}
+}

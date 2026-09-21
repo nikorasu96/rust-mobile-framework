@@ -1,0 +1,17 @@
+[package]
+name = "hello-headless"
+description = "Composition-root example for Rust Mobile Framework"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+rmf-core = { path = "../../crates/rmf-core" }
+rmf-renderer-headless = { path = "../../adapters/rmf-renderer-headless" }
+rmf-runtime = { path = "../../crates/rmf-runtime" }
+
+[lints]
+workspace = true
+

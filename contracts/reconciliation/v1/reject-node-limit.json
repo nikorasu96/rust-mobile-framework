@@ -1,0 +1,20 @@
+{
+  "contract_version": 1,
+  "name": "reject-node-limit",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "limits": {"max_nodes": 2},
+  "previous": null,
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {},
+    "children": [
+      {"kind": "Text", "key": "a", "properties": {}, "children": []},
+      {"kind": "Text", "key": "b", "properties": {}, "children": []}
+    ]
+  },
+  "expected": {"result": "error", "code": "NODE_COUNT_LIMIT"}
+}
+

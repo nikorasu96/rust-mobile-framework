@@ -1,0 +1,18 @@
+{
+  "contract_version": 1,
+  "name": "reject-unregistered-event-code",
+  "input": {
+    "abi_version": 1,
+    "operation": 3,
+    "request_id": 11,
+    "surface_id": 7,
+    "generation": 12,
+    "payload_hex": "524d50310100030018000000000000002a0000000000000002000000010000000000000000000000",
+    "caller_thread": "main"
+  },
+  "expected": {
+    "result": "rejected",
+    "status": 102,
+    "code": "INVALID_ARGUMENT"
+  }
+}

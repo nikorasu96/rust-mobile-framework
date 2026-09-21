@@ -1,0 +1,63 @@
+{
+  "contract_version": 1,
+  "kind": "response_frame",
+  "cases": [
+    {
+      "name": "valid-empty-response",
+      "frame_hex": "524d463101002000000000000000000001000000000000000000000000000000",
+      "expected": {
+        "result": "accepted",
+        "frame": {"abi_version": 1, "status": 0, "request_id": 1, "payload_hex": ""}
+      }
+    },
+    {
+      "name": "valid-response-body",
+      "frame_hex": "524d463101002000000000000100000001000000000000000000000000000000aa",
+      "expected": {
+        "result": "accepted",
+        "frame": {"abi_version": 1, "status": 0, "request_id": 1, "payload_hex": "aa"}
+      }
+    },
+    {
+      "name": "reject-truncated-header",
+      "frame_hex": "524d",
+      "expected": {"result": "rejected", "code": "TRUNCATED_HEADER"}
+    },
+    {
+      "name": "reject-invalid-magic",
+      "frame_hex": "004d463101002000000000000000000001000000000000000000000000000000",
+      "expected": {"result": "rejected", "code": "INVALID_MAGIC"}
+    },
+    {
+      "name": "reject-unsupported-abi",
+      "frame_hex": "524d463102002000000000000000000001000000000000000000000000000000",
+      "expected": {"result": "rejected", "code": "UNSUPPORTED_ABI"}
+    },
+    {
+      "name": "reject-invalid-header-length",
+      "frame_hex": "524d463101001f00000000000000000001000000000000000000000000000000",
+      "expected": {"result": "rejected", "code": "INVALID_HEADER_LENGTH"}
+    },
+    {
+      "name": "reject-unknown-status",
+      "frame_hex": "524d463101002000090300000000000001000000000000000000000000000000",
+      "expected": {"result": "rejected", "code": "UNKNOWN_STATUS"}
+    },
+    {
+      "name": "reject-negative-request-id",
+      "frame_hex": "524d4631010020000000000000000000ffffffffffffffff0000000000000000",
+      "expected": {"result": "rejected", "code": "INVALID_REQUEST_ID"}
+    },
+    {
+      "name": "reject-nonzero-reserved",
+      "frame_hex": "524d463101002000000000000000000001000000000000000000000000000001",
+      "expected": {"result": "rejected", "code": "NONZERO_RESERVED"}
+    },
+    {
+      "name": "reject-payload-length-mismatch",
+      "frame_hex": "524d463101002000000000000100000001000000000000000000000000000000",
+      "expected": {"result": "rejected", "code": "PAYLOAD_LENGTH_MISMATCH"}
+    }
+  ]
+}
+

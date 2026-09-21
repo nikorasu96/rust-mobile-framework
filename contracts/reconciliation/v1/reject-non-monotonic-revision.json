@@ -1,0 +1,10 @@
+{
+  "contract_version": 1,
+  "name": "reject-non-monotonic-revision",
+  "base_revision": 4,
+  "target_revision": 4,
+  "allocator_next_id": 1,
+  "previous": null,
+  "candidate": {"kind": "View", "key": null, "properties": {}, "children": []},
+  "expected": {"result": "error", "code": "INVALID_REVISION"}
+}

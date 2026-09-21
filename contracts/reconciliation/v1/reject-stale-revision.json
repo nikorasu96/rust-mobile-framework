@@ -1,0 +1,14 @@
+{
+  "contract_version": 1,
+  "name": "reject-stale-revision",
+  "base_revision": 3,
+  "target_revision": 4,
+  "allocator_next_id": 2,
+  "previous": {
+    "revision": 4,
+    "root": {"node_id": 1, "kind": "View", "key": null, "properties": {}, "children": []}
+  },
+  "candidate": {"kind": "View", "key": null, "properties": {}, "children": []},
+  "expected": {"result": "error", "code": "STALE_REVISION"}
+}
+

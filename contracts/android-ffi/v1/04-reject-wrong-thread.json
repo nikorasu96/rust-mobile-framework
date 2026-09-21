@@ -1,0 +1,19 @@
+{
+  "contract_version": 1,
+  "name": "reject-off-main-thread-before-routing",
+  "input": {
+    "abi_version": 1,
+    "operation": 2,
+    "request_id": 3,
+    "surface_id": 7,
+    "generation": 2,
+    "payload_hex": "",
+    "caller_thread": "worker"
+  },
+  "expected": {
+    "result": "rejected",
+    "status": 103,
+    "code": "WRONG_THREAD"
+  }
+}
+

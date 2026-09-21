@@ -1,0 +1,11 @@
+{
+  "contract_version": 1,
+  "name": "reject-unexpected-transaction-field",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "previous": null,
+  "candidate": {"kind": "View", "key": null, "properties": {}, "children": []},
+  "platform_handle": 99,
+  "expected": {"result": "error", "code": "INVALID_TRANSACTION_STRUCTURE"}
+}

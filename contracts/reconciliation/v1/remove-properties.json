@@ -1,0 +1,61 @@
+{
+  "contract_version": 1,
+  "name": "remove-properties",
+  "base_revision": 2,
+  "target_revision": 3,
+  "allocator_next_id": 3,
+  "previous": {
+    "revision": 2,
+    "root": {
+      "node_id": 1,
+      "kind": "View",
+      "key": null,
+      "properties": {},
+      "children": [
+        {
+          "node_id": 2,
+          "kind": "Text",
+          "key": "label",
+          "properties": {
+            "1": {"type": "string", "value": "Visible"},
+            "2": {"type": "bool", "value": true}
+          },
+          "children": []
+        }
+      ]
+    }
+  },
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {},
+    "children": [
+      {
+        "kind": "Text",
+        "key": "label",
+        "properties": {"2": {"type": "bool", "value": true}},
+        "children": []
+      }
+    ]
+  },
+  "expected": {
+    "result": "batch",
+    "operations": [
+      {"op": "UpdateProperties", "node_id": 2, "set": {}, "remove": ["1"]}
+    ],
+    "committed": {
+      "revision": 3,
+      "root": {
+        "node_id": 1,
+        "kind": "View",
+        "key": null,
+        "properties": {},
+        "children": [
+          {"node_id": 2, "kind": "Text", "key": "label", "properties": {"2": {"type": "bool", "value": true}}, "children": []}
+        ]
+      }
+    },
+    "next_node_id": 3
+  }
+}
+

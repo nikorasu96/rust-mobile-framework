@@ -1,0 +1,19 @@
+{
+  "contract_version": 1,
+  "name": "reject-identifier-outside-kotlin-long-range",
+  "input": {
+    "abi_version": 1,
+    "operation": 1,
+    "request_id": 1,
+    "surface_id": 9223372036854775808,
+    "generation": 0,
+    "payload_hex": "",
+    "caller_thread": "main"
+  },
+  "expected": {
+    "result": "rejected",
+    "status": 102,
+    "code": "INVALID_ARGUMENT"
+  }
+}
+

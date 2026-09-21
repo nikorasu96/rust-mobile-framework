@@ -1,0 +1,19 @@
+{
+  "contract_version": 1,
+  "name": "reject-operation-limit",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "limits": {"max_operations": 3},
+  "previous": null,
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {},
+    "children": [
+      {"kind": "Text", "key": "child", "properties": {"1": {"type": "string", "value": "x"}}, "children": []}
+    ]
+  },
+  "expected": {"result": "error", "code": "OPERATION_COUNT_LIMIT"}
+}
+

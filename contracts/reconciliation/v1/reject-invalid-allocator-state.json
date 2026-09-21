@@ -1,0 +1,10 @@
+{
+  "contract_version": 1,
+  "name": "reject-invalid-allocator-state",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 0,
+  "previous": null,
+  "candidate": {"kind": "View", "key": null, "properties": {}, "children": []},
+  "expected": {"result": "error", "code": "INVALID_ALLOCATOR_STATE"}
+}

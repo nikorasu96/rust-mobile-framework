@@ -1,0 +1,13 @@
+{
+  "contract_version": 1,
+  "name": "reject-allocator-overlap",
+  "base_revision": 1,
+  "target_revision": 2,
+  "allocator_next_id": 5,
+  "previous": {
+    "revision": 1,
+    "root": {"node_id": 5, "kind": "View", "key": null, "properties": {}, "children": []}
+  },
+  "candidate": {"kind": "View", "key": null, "properties": {}, "children": []},
+  "expected": {"result": "error", "code": "INVALID_ALLOCATOR_STATE"}
+}

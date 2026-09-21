@@ -1,0 +1,19 @@
+{
+  "contract_version": 1,
+  "name": "reject-unsupported-abi-before-routing",
+  "input": {
+    "abi_version": 2,
+    "operation": 1,
+    "request_id": 1,
+    "surface_id": 7,
+    "generation": 0,
+    "payload_hex": "",
+    "caller_thread": "main"
+  },
+  "expected": {
+    "result": "rejected",
+    "status": 100,
+    "code": "UNSUPPORTED_ABI"
+  }
+}
+

@@ -1,0 +1,60 @@
+{
+  "contract_version": 1,
+  "mutation": "single_bit",
+  "bit_masks": [1, 2, 4, 8, 16, 32, 64, 128],
+  "seeds": [
+    {
+      "name": "response-ok-empty",
+      "kind": "response",
+      "status": "OK",
+      "request_id": 1,
+      "payload_hex": ""
+    },
+    {
+      "name": "response-invalid-argument-with-payload",
+      "kind": "response",
+      "status": "INVALID_ARGUMENT",
+      "request_id": 9,
+      "payload_hex": "0102"
+    },
+    {
+      "name": "event-click",
+      "kind": "event",
+      "node_id": 42,
+      "event": "CLICK",
+      "sequence": 1
+    },
+    {
+      "name": "commit-applied",
+      "kind": "commit_result",
+      "base_revision": 4,
+      "target_revision": 5,
+      "outcome": "APPLIED",
+      "reason": "NONE"
+    },
+    {
+      "name": "commit-rejected",
+      "kind": "commit_result",
+      "base_revision": 4,
+      "target_revision": 5,
+      "outcome": "REJECTED_BEFORE_MUTATION",
+      "reason": "HOST_VALIDATION"
+    },
+    {
+      "name": "commit-failed-unavailable",
+      "kind": "commit_result",
+      "base_revision": 4,
+      "target_revision": 5,
+      "outcome": "FAILED_AFTER_MUTATION",
+      "reason": "HOST_UNAVAILABLE"
+    },
+    {
+      "name": "commit-failed-internal",
+      "kind": "commit_result",
+      "base_revision": 4,
+      "target_revision": 5,
+      "outcome": "FAILED_AFTER_MUTATION",
+      "reason": "HOST_INTERNAL"
+    }
+  ]
+}

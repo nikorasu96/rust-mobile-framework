@@ -1,0 +1,16 @@
+{
+  "contract_version": 1,
+  "name": "reject-unexpected-node-field",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "previous": null,
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {},
+    "children": [],
+    "native_handle": 42
+  },
+  "expected": {"result": "error", "code": "INVALID_NODE_STRUCTURE"}
+}

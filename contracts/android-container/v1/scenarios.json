@@ -1,0 +1,114 @@
+{
+  "contract_version": 1,
+  "scenarios": [
+    {
+      "name": "claim-attach-release",
+      "actions": [
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 10},
+        {"type": "attach_succeeded", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1, "root_id": 100},
+        {"type": "release", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1}
+      ],
+      "effects": ["ADD_ROOT", "NONE", "REMOVE_ROOT"],
+      "errors": [null, null, null]
+    },
+    {
+      "name": "duplicate-container-rejected",
+      "actions": [
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 10},
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 11}
+      ],
+      "effects": ["ADD_ROOT", null],
+      "errors": [null, "CONTAINER_ALREADY_OWNED"]
+    },
+    {
+      "name": "release-before-attach",
+      "actions": [
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 10},
+        {"type": "release", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1},
+        {"type": "attach_succeeded", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1, "root_id": 100}
+      ],
+      "effects": ["ADD_ROOT", "CANCEL_ATTACH", "REMOVE_STALE_ROOT"],
+      "errors": [null, null, null]
+    },
+    {
+      "name": "stale-release-is-idempotent",
+      "actions": [
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 10},
+        {"type": "release", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1},
+        {"type": "release", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1}
+      ],
+      "effects": ["ADD_ROOT", "CANCEL_ATTACH", "DROP_STALE_RELEASE"],
+      "errors": [null, null, null]
+    },
+    {
+      "name": "container-reclaimed-with-new-mount",
+      "actions": [
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 10},
+        {"type": "release", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1},
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 11},
+        {"type": "attach_succeeded", "caller_thread": "main", "container_id": 1, "host_id": 11, "mount_id": 2, "root_id": 101}
+      ],
+      "effects": ["ADD_ROOT", "CANCEL_ATTACH", "ADD_ROOT", "NONE"],
+      "errors": [null, null, null, null]
+    },
+    {
+      "name": "old-result-cannot-replace-current-host",
+      "actions": [
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 10},
+        {"type": "release", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1},
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 11},
+        {"type": "attach_succeeded", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1, "root_id": 100},
+        {"type": "attach_succeeded", "caller_thread": "main", "container_id": 1, "host_id": 11, "mount_id": 2, "root_id": 101}
+      ],
+      "effects": ["ADD_ROOT", "CANCEL_ATTACH", "ADD_ROOT", "REMOVE_STALE_ROOT", "NONE"],
+      "errors": [null, null, null, null, null]
+    },
+    {
+      "name": "root-cannot-have-two-parents",
+      "actions": [
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 10},
+        {"type": "attach_succeeded", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1, "root_id": 100},
+        {"type": "claim", "caller_thread": "main", "container_id": 2, "host_id": 11},
+        {"type": "attach_succeeded", "caller_thread": "main", "container_id": 2, "host_id": 11, "mount_id": 2, "root_id": 100}
+      ],
+      "effects": ["ADD_ROOT", "NONE", "ADD_ROOT", null],
+      "errors": [null, null, null, "ROOT_NOT_DETACHED"]
+    },
+    {
+      "name": "worker-view-operation-rejected",
+      "actions": [
+        {"type": "claim", "caller_thread": "worker", "container_id": 1, "host_id": 10}
+      ],
+      "effects": [null],
+      "errors": ["WRONG_THREAD"]
+    },
+    {
+      "name": "failed-attach-releases-container",
+      "actions": [
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 10},
+        {"type": "attach_failed", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1},
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 11}
+      ],
+      "effects": ["ADD_ROOT", "NONE", "ADD_ROOT"],
+      "errors": [null, null, null]
+    },
+    {
+      "name": "stale-failure-is-dropped",
+      "actions": [
+        {"type": "claim", "caller_thread": "main", "container_id": 1, "host_id": 10},
+        {"type": "release", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1},
+        {"type": "attach_failed", "caller_thread": "main", "container_id": 1, "host_id": 10, "mount_id": 1}
+      ],
+      "effects": ["ADD_ROOT", "CANCEL_ATTACH", "DROP_STALE_RESULT"],
+      "errors": [null, null, null]
+    },
+    {
+      "name": "invalid-identity-is-rejected",
+      "actions": [
+        {"type": "claim", "caller_thread": "main", "container_id": 0, "host_id": 10}
+      ],
+      "effects": [null],
+      "errors": ["INVALID_ID"]
+    }
+  ]
+}

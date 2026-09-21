@@ -1,0 +1,22 @@
+{
+  "contract_version": 1,
+  "name": "dispose failure releases the handle and is terminal",
+  "actions": [
+    {"type": "request_create", "caller_thread": "main"},
+    {"type": "native_create_succeeded", "caller_thread": "main", "surface_id": 5, "generation": 6},
+    {"type": "request_close", "caller_thread": "main"},
+    {"type": "native_dispose_failed", "caller_thread": "main", "reason": "HOST_INTERNAL"},
+    {"type": "request_close", "caller_thread": "main"}
+  ],
+  "expected": {
+    "final_state": {"state": "FAILED", "handle": null, "last_sequence": 0, "failure": "DISPOSE_HOST_INTERNAL", "queued_from": null},
+    "effects": [
+      {"type": "CALL_NATIVE_CREATE"},
+      {"type": "NONE"},
+      {"type": "CALL_NATIVE_DISPOSE", "surface_id": 5, "generation": 6},
+      {"type": "NONE"},
+      {"type": "NONE"}
+    ],
+    "error": null
+  }
+}

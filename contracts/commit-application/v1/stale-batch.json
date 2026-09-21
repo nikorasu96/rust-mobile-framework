@@ -1,0 +1,10 @@
+{
+  "contract_version": 1,
+  "name": "stale-batch",
+  "initial": {"state": "ready", "revision": 4},
+  "actions": [{"op": "begin_apply", "base_revision": 3, "target_revision": 4}],
+  "expected": {
+    "outputs": [{"result": "rejected", "code": "STALE_BATCH"}],
+    "final": {"state": "ready", "revision": 4}
+  }
+}

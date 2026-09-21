@@ -1,0 +1,30 @@
+{
+  "contract_version": 1,
+  "name": "worker close posts once and suppresses callbacks",
+  "actions": [
+    {"type": "request_create", "caller_thread": "main"},
+    {"type": "native_create_succeeded", "caller_thread": "main", "surface_id": 8, "generation": 4},
+    {"type": "request_close", "caller_thread": "worker"},
+    {"type": "request_close", "caller_thread": "worker"},
+    {"type": "native_callback", "caller_thread": "main", "surface_id": 8, "generation": 4, "sequence": 1},
+    {"type": "main_drain_close", "caller_thread": "main"},
+    {"type": "request_close", "caller_thread": "main"},
+    {"type": "native_dispose_succeeded", "caller_thread": "main"},
+    {"type": "request_close", "caller_thread": "worker"}
+  ],
+  "expected": {
+    "final_state": {"state": "CLOSED", "handle": null, "last_sequence": 0, "failure": null, "queued_from": null},
+    "effects": [
+      {"type": "CALL_NATIVE_CREATE"},
+      {"type": "NONE"},
+      {"type": "POST_CLOSE_TO_MAIN"},
+      {"type": "NONE"},
+      {"type": "DROP_CALLBACK"},
+      {"type": "CALL_NATIVE_DISPOSE", "surface_id": 8, "generation": 4},
+      {"type": "NONE"},
+      {"type": "NONE"},
+      {"type": "NONE"}
+    ],
+    "error": null
+  }
+}

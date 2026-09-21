@@ -1,0 +1,77 @@
+{
+  "contract_version": 1,
+  "name": "valid-property-types",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "previous": null,
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {
+      "2": {"type": "bool", "value": true},
+      "3": {"type": "i64", "value": -42},
+      "4": {"type": "f64", "value": 1.5}
+    },
+    "children": [
+      {
+        "kind": "Text",
+        "key": "label",
+        "properties": {"1": {"type": "string", "value": "válido"}},
+        "children": []
+      }
+    ]
+  },
+  "expected": {
+    "result": "batch",
+    "operations": [
+      {"op": "Create", "node_id": 1, "kind": "View"},
+      {
+        "op": "UpdateProperties",
+        "node_id": 1,
+        "set": {
+          "2": {"type": "bool", "value": true},
+          "3": {"type": "i64", "value": -42},
+          "4": {"type": "f64", "value": 1.5}
+        },
+        "remove": []
+      },
+      {"op": "Create", "node_id": 2, "kind": "Text"},
+      {
+        "op": "UpdateProperties",
+        "node_id": 2,
+        "set": {"1": {"type": "string", "value": "válido"}},
+        "remove": []
+      },
+      {
+        "op": "InsertChild",
+        "parent_id": 1,
+        "child_id": 2,
+        "index": 0
+      }
+    ],
+    "committed": {
+      "revision": 1,
+      "root": {
+        "node_id": 1,
+        "kind": "View",
+        "key": null,
+        "properties": {
+          "2": {"type": "bool", "value": true},
+          "3": {"type": "i64", "value": -42},
+          "4": {"type": "f64", "value": 1.5}
+        },
+        "children": [
+          {
+            "node_id": 2,
+            "kind": "Text",
+            "key": "label",
+            "properties": {"1": {"type": "string", "value": "válido"}},
+            "children": []
+          }
+        ]
+      }
+    },
+    "next_node_id": 3
+  }
+}

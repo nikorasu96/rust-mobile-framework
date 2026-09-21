@@ -1,0 +1,26 @@
+{
+  "contract_version": 1,
+  "name": "create-surface-without-preassigned-generation",
+  "input": {
+    "abi_version": 1,
+    "operation": 1,
+    "request_id": 1,
+    "surface_id": 7,
+    "generation": 0,
+    "payload_hex": "",
+    "caller_thread": "main"
+  },
+  "expected": {
+    "result": "accepted",
+    "status": 0,
+    "code": "OK",
+    "request": {
+      "operation": "CREATE_SURFACE",
+      "request_id": 1,
+      "surface_id": 7,
+      "generation": null,
+      "payload_bytes": 0
+    }
+  }
+}
+

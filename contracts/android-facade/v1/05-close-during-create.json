@@ -1,0 +1,22 @@
+{
+  "contract_version": 1,
+  "name": "close during native create disposes the returned handle",
+  "actions": [
+    {"type": "request_create", "caller_thread": "main"},
+    {"type": "request_close", "caller_thread": "main"},
+    {"type": "native_create_succeeded", "caller_thread": "main", "surface_id": 9, "generation": 2},
+    {"type": "native_callback", "caller_thread": "main", "surface_id": 9, "generation": 2, "sequence": 1},
+    {"type": "native_dispose_succeeded", "caller_thread": "main"}
+  ],
+  "expected": {
+    "final_state": {"state": "CLOSED", "handle": null, "last_sequence": 0, "failure": null, "queued_from": null},
+    "effects": [
+      {"type": "CALL_NATIVE_CREATE"},
+      {"type": "NONE"},
+      {"type": "CALL_NATIVE_DISPOSE", "surface_id": 9, "generation": 2},
+      {"type": "DROP_CALLBACK"},
+      {"type": "NONE"}
+    ],
+    "error": null
+  }
+}

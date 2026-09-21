@@ -1,0 +1,50 @@
+{
+  "contract_version": 1,
+  "name": "replace-kind",
+  "base_revision": 7,
+  "target_revision": 8,
+  "allocator_next_id": 3,
+  "previous": {
+    "revision": 7,
+    "root": {
+      "node_id": 1,
+      "kind": "View",
+      "key": null,
+      "properties": {},
+      "children": [
+        {"node_id": 2, "kind": "Text", "key": "content", "properties": {}, "children": []}
+      ]
+    }
+  },
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {},
+    "children": [
+      {"kind": "View", "key": "content", "properties": {}, "children": []}
+    ]
+  },
+  "expected": {
+    "result": "batch",
+    "operations": [
+      {"op": "RemoveChild", "parent_id": 1, "child_id": 2, "index": 0},
+      {"op": "Delete", "node_id": 2},
+      {"op": "Create", "node_id": 3, "kind": "View"},
+      {"op": "InsertChild", "parent_id": 1, "child_id": 3, "index": 0}
+    ],
+    "committed": {
+      "revision": 8,
+      "root": {
+        "node_id": 1,
+        "kind": "View",
+        "key": null,
+        "properties": {},
+        "children": [
+          {"node_id": 3, "kind": "View", "key": "content", "properties": {}, "children": []}
+        ]
+      }
+    },
+    "next_node_id": 4
+  }
+}
+

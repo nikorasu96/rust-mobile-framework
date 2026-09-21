@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "status": "planned_compile_gated",
+  "toolchain": {
+    "android_gradle_plugin": "9.4.0",
+    "gradle": "9.6.0",
+    "jdk": 17,
+    "ndk": "28.2.13676358",
+    "rust": "1.85.0"
+  },
+  "android": {
+    "compile_sdk": 37,
+    "target_sdk": 37,
+    "min_sdk": 26,
+    "abis": {
+      "arm64-v8a": "aarch64-linux-android",
+      "x86_64": "x86_64-linux-android"
+    }
+  },
+  "modules": [
+    {
+      "id": "rmf-android-jni",
+      "kind": "rust_cdylib",
+      "location": "platforms/android/native/rmf-android-jni",
+      "ownership": "JNI registration, ABI codecs, panic containment and safe runtime routing",
+      "visibility": "internal",
+      "depends_on": [],
+      "inward_dependencies": ["rmf-runtime"],
+      "public_symbols": ["JNI_OnLoad"]
+    },
+    {
+      "id": "framework",
+      "kind": "android_library",
+      "location": "platforms/android/framework",
+      "ownership": "Public Kotlin facade, main-thread dispatch and Android view hosting",
+      "visibility": "published",
+      "depends_on": ["rmf-android-jni"],
+      "inward_dependencies": [],
+      "public_symbols": ["dev.rmf.android.RmfSurfaceHost"]
+    },
+    {
+      "id": "sample",
+      "kind": "android_application",
+      "location": "platforms/android/sample",
+      "ownership": "Executable Android composition root and end-to-end test host",
+      "visibility": "example",
+      "depends_on": ["framework"],
+      "inward_dependencies": [],
+      "public_symbols": []
+    }
+  ],
+  "artifact_flow": {
+    "native_library": "librmf_android.so",
+    "build_mode": "rust_cross_compile_then_stage",
+    "staging_directory": "platforms/android/framework/build/generated/rmfJniLibs",
+    "packaging_input": "jniLibs",
+    "published_artifact": "rmf-android.aar",
+    "generated_artifacts_tracked": false
+  },
+  "rules": [
+    "domain_has_no_android_dependency",
+    "kotlin_never_calls_domain_directly",
+    "jni_contains_no_domain_logic",
+    "framework_is_the_only_published_module",
+    "sample_is_never_a_production_dependency",
+    "generated_native_libraries_are_not_source_files",
+    "native_exports_only_jni_on_load"
+  ]
+}

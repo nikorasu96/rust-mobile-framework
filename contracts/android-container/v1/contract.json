@@ -1,0 +1,41 @@
+{
+  "contract_version": 1,
+  "threading": "main_only",
+  "identity_range": "positive_kotlin_long",
+  "states": [
+    "RESERVED",
+    "ATTACHED"
+  ],
+  "actions": [
+    "claim",
+    "attach_succeeded",
+    "attach_failed",
+    "release"
+  ],
+  "effects": [
+    "ADD_ROOT",
+    "REMOVE_ROOT",
+    "REMOVE_STALE_ROOT",
+    "CANCEL_ATTACH",
+    "DROP_STALE_RESULT",
+    "DROP_STALE_RELEASE",
+    "NONE"
+  ],
+  "errors": [
+    "WRONG_THREAD",
+    "INVALID_ID",
+    "CONTAINER_ALREADY_OWNED",
+    "ROOT_NOT_DETACHED",
+    "MOUNT_ID_EXHAUSTED"
+  ],
+  "invariants": [
+    "one_current_host_per_container",
+    "one_container_per_attached_root",
+    "mount_ids_are_positive_monotonic_and_never_reused",
+    "release_is_idempotent",
+    "attached_root_is_removed_exactly_once",
+    "stale_results_never_mutate_current_binding",
+    "container_can_be_reclaimed_after_release",
+    "all_view_hierarchy_effects_run_on_main"
+  ]
+}

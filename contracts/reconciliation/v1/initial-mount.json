@@ -1,0 +1,44 @@
+{
+  "contract_version": 1,
+  "name": "initial-mount",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "previous": null,
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {},
+    "children": [
+      {
+        "kind": "Text",
+        "key": "greeting",
+        "properties": {"1": {"type": "string", "value": "Hello"}},
+        "children": []
+      }
+    ]
+  },
+  "expected": {
+    "result": "batch",
+    "operations": [
+      {"op": "Create", "node_id": 1, "kind": "View"},
+      {"op": "Create", "node_id": 2, "kind": "Text"},
+      {"op": "UpdateProperties", "node_id": 2, "set": {"1": {"type": "string", "value": "Hello"}}, "remove": []},
+      {"op": "InsertChild", "parent_id": 1, "child_id": 2, "index": 0}
+    ],
+    "committed": {
+      "revision": 1,
+      "root": {
+        "node_id": 1,
+        "kind": "View",
+        "key": null,
+        "properties": {},
+        "children": [
+          {"node_id": 2, "kind": "Text", "key": "greeting", "properties": {"1": {"type": "string", "value": "Hello"}}, "children": []}
+        ]
+      }
+    },
+    "next_node_id": 3
+  }
+}
+

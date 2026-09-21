@@ -1,0 +1,17 @@
+{
+  "contract_version": 1,
+  "name": "reject-string-limit",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "limits": {"max_string_bytes": 4},
+  "previous": null,
+  "candidate": {
+    "kind": "Text",
+    "key": null,
+    "properties": {"1": {"type": "string", "value": "12345"}},
+    "children": []
+  },
+  "expected": {"result": "error", "code": "STRING_BYTES_LIMIT"}
+}
+

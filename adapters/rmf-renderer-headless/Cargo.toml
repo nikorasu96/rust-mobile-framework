@@ -1,0 +1,16 @@
+[package]
+name = "rmf-renderer-headless"
+description = "Deterministic headless renderer adapter for Rust Mobile Framework"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+rmf-core = { path = "../../crates/rmf-core" }
+rmf-runtime = { path = "../../crates/rmf-runtime" }
+
+[lints]
+workspace = true
+

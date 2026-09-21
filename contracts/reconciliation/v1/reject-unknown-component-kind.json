@@ -1,0 +1,15 @@
+{
+  "contract_version": 1,
+  "name": "reject-unknown-component-kind",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "previous": null,
+  "candidate": {
+    "kind": "Image",
+    "key": null,
+    "properties": {},
+    "children": []
+  },
+  "expected": {"result": "error", "code": "UNKNOWN_COMPONENT_KIND"}
+}

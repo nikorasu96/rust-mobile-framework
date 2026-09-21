@@ -1,0 +1,15 @@
+[package]
+name = "rmf-runtime"
+description = "Runtime use cases and ports for Rust Mobile Framework"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+rmf-core = { path = "../rmf-core" }
+
+[lints]
+workspace = true
+

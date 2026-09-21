@@ -1,0 +1,16 @@
+{
+  "contract_version": 1,
+  "name": "safe-host-rejection",
+  "initial": {"state": "ready", "revision": 8},
+  "actions": [
+    {"op": "begin_apply", "base_revision": 8, "target_revision": 9},
+    {"op": "host_rejected", "code": "UNSUPPORTED_COMPONENT"}
+  ],
+  "expected": {
+    "outputs": [
+      {"result": "apply_started", "base_revision": 8, "target_revision": 9},
+      {"result": "batch_discarded", "code": "UNSUPPORTED_COMPONENT", "revision": 8}
+    ],
+    "final": {"state": "ready", "revision": 8}
+  }
+}

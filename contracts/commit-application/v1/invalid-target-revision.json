@@ -1,0 +1,10 @@
+{
+  "contract_version": 1,
+  "name": "invalid-target-revision",
+  "initial": {"state": "ready", "revision": 4},
+  "actions": [{"op": "begin_apply", "base_revision": 4, "target_revision": 6}],
+  "expected": {
+    "outputs": [{"result": "rejected", "code": "INVALID_REVISION"}],
+    "final": {"state": "ready", "revision": 4}
+  }
+}

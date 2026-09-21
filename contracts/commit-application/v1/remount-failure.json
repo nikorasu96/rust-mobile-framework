@@ -1,0 +1,25 @@
+{
+  "contract_version": 1,
+  "name": "remount-failure",
+  "initial": {"state": "ready", "revision": 5},
+  "actions": [
+    {"op": "begin_apply", "base_revision": 5, "target_revision": 6},
+    {"op": "host_failed", "code": "NATIVE_OPERATION_FAILED"},
+    {"op": "begin_remount"},
+    {"op": "remount_failed", "code": "REMOUNT_FAILED"}
+  ],
+  "expected": {
+    "outputs": [
+      {"result": "apply_started", "base_revision": 5, "target_revision": 6},
+      {"result": "recovery_required", "code": "NATIVE_OPERATION_FAILED", "revision": 5},
+      {"result": "remount_started", "revision": 5},
+      {"result": "recovery_required", "code": "REMOUNT_FAILED", "revision": 5}
+    ],
+    "final": {
+      "state": "failed",
+      "revision": 5,
+      "attempted_revision": 6,
+      "failure_code": "REMOUNT_FAILED"
+    }
+  }
+}

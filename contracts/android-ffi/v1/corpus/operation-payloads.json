@@ -1,0 +1,66 @@
+{
+  "contract_version": 1,
+  "kind": "operation_payload",
+  "cases": [
+    {
+      "name": "valid-dispatch-event",
+      "operation": 3,
+      "frame_hex": "524d50310100030003000000000000000102ff",
+      "expected": {
+        "result": "accepted",
+        "payload": {"schema_version": 1, "operation": 3, "body_hex": "0102ff"}
+      }
+    },
+    {
+      "name": "valid-commit-result",
+      "operation": 4,
+      "frame_hex": "524d503101000400010000000000000000",
+      "expected": {
+        "result": "accepted",
+        "payload": {"schema_version": 1, "operation": 4, "body_hex": "00"}
+      }
+    },
+    {
+      "name": "reject-truncated-payload-header",
+      "operation": 3,
+      "frame_hex": "524d50",
+      "expected": {"result": "rejected", "code": "TRUNCATED_PAYLOAD_HEADER"}
+    },
+    {
+      "name": "reject-invalid-payload-magic",
+      "operation": 3,
+      "frame_hex": "004d5031010003000100000000000000aa",
+      "expected": {"result": "rejected", "code": "INVALID_PAYLOAD_MAGIC"}
+    },
+    {
+      "name": "reject-unknown-payload-version",
+      "operation": 3,
+      "frame_hex": "524d5031020003000100000000000000aa",
+      "expected": {"result": "rejected", "code": "UNSUPPORTED_PAYLOAD_VERSION"}
+    },
+    {
+      "name": "reject-operation-mismatch",
+      "operation": 3,
+      "frame_hex": "524d5031010004000100000000000000aa",
+      "expected": {"result": "rejected", "code": "PAYLOAD_OPERATION_MISMATCH"}
+    },
+    {
+      "name": "reject-body-length-mismatch",
+      "operation": 3,
+      "frame_hex": "524d5031010003000200000000000000aa",
+      "expected": {"result": "rejected", "code": "PAYLOAD_LENGTH_MISMATCH"}
+    },
+    {
+      "name": "reject-nonzero-payload-reserved",
+      "operation": 3,
+      "frame_hex": "524d5031010003000100000000000001aa",
+      "expected": {"result": "rejected", "code": "NONZERO_PAYLOAD_RESERVED"}
+    },
+    {
+      "name": "reject-empty-payload-body",
+      "operation": 3,
+      "frame_hex": "524d5031010003000000000000000000",
+      "expected": {"result": "rejected", "code": "EMPTY_PAYLOAD_BODY"}
+    }
+  ]
+}

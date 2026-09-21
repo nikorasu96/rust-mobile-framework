@@ -1,0 +1,57 @@
+{
+  "contract_version": 1,
+  "initial_state": "NEW",
+  "states": [
+    "NEW",
+    "CREATE_QUEUED",
+    "CREATING",
+    "ACTIVE",
+    "CLOSE_QUEUED",
+    "CLOSE_PENDING_CREATE",
+    "CLOSING",
+    "CLOSED",
+    "FAILED"
+  ],
+  "actions": [
+    "request_create",
+    "main_drain_create",
+    "native_create_succeeded",
+    "native_create_failed",
+    "request_close",
+    "main_drain_close",
+    "native_dispose_succeeded",
+    "native_dispose_failed",
+    "native_callback"
+  ],
+  "effects": [
+    "CALL_NATIVE_CREATE",
+    "POST_CREATE_TO_MAIN",
+    "CANCEL_QUEUED_CREATE",
+    "CALL_NATIVE_DISPOSE",
+    "POST_CLOSE_TO_MAIN",
+    "DELIVER_CALLBACK",
+    "DROP_CALLBACK",
+    "IGNORE_CANCELLED_TASK",
+    "NONE"
+  ],
+  "errors": [
+    "INVALID_TRANSITION",
+    "INVALID_HANDLE",
+    "INVALID_SEQUENCE",
+    "WRONG_THREAD"
+  ],
+  "threading": {
+    "public_requests": "marshal_to_main",
+    "native_results": "main_only",
+    "native_callbacks": "main_only"
+  },
+  "invariants": [
+    "native_create_runs_only_on_main",
+    "native_dispose_runs_at_most_once",
+    "close_is_idempotent",
+    "closed_and_failed_are_terminal",
+    "callbacks_require_current_handle",
+    "callback_sequence_is_strictly_increasing",
+    "no_callback_is_delivered_after_close_request"
+  ]
+}

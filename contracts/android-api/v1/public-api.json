@@ -1,0 +1,104 @@
+{
+  "contract_version": 1,
+  "artifact": "rmf-android.aar",
+  "namespace": "dev.rmf.android",
+  "api_version": "0.1.0",
+  "stability": "experimental",
+  "declarations": [
+    {
+      "kind": "class",
+      "fq_name": "dev.rmf.android.RmfSurfaceHost",
+      "visibility": "public",
+      "modality": "final",
+      "constructor_visibility": "public",
+      "supertypes": ["java.lang.AutoCloseable"],
+      "annotations": [],
+      "members": [
+        {
+          "kind": "constructor",
+          "name": "<init>",
+          "owner": "instance",
+          "visibility": "public",
+          "modality": "final",
+          "static_for_java": false,
+          "override": false,
+          "parameters": [
+            {
+              "name": "container",
+              "type": "android.view.ViewGroup",
+              "nullable": false
+            }
+          ],
+          "return": {
+            "type": "kotlin.Unit",
+            "nullable": false
+          },
+          "threading": "any_thread_marshaled",
+          "idempotent": false,
+          "throws": [],
+          "jvm_descriptor": "(Landroid/view/ViewGroup;)V",
+          "documentation_required": true
+        },
+        {
+          "kind": "function",
+          "name": "close",
+          "owner": "instance",
+          "visibility": "public",
+          "modality": "final",
+          "static_for_java": false,
+          "override": true,
+          "parameters": [],
+          "return": {
+            "type": "kotlin.Unit",
+            "nullable": false
+          },
+          "threading": "any_thread_marshaled",
+          "idempotent": true,
+          "throws": [],
+          "jvm_descriptor": "()V",
+          "documentation_required": true
+        }
+      ],
+      "documentation_required": true
+    }
+  ],
+  "forbidden_surface": {
+    "types": [
+      "java.nio.ByteBuffer",
+      "kotlin.ByteArray",
+      "dev.rmf.android.internal.NativeBridge"
+    ],
+    "features": [
+      "public_data_class",
+      "public_default_argument",
+      "public_inline",
+      "public_typealias",
+      "published_api",
+      "mutable_public_property",
+      "native_pointer",
+      "partial_surface_handle"
+    ]
+  },
+  "compatibility": {
+    "policy": "semver_pre_1_0",
+    "patch_release": "additive_only",
+    "minor_breaking_change": "requires_adr_migration_and_changelog",
+    "stable_breaking_change": "major_only",
+    "binary": "required",
+    "source": "best_effort",
+    "behavioral_contracts": [
+      "contracts/android-facade/v1/contract.json",
+      "contracts/android-ffi/v1/contract.json"
+    ]
+  },
+  "build_requirements": {
+    "kotlin_toolchain_owner": "android_gradle_plugin",
+    "built_in_kotlin": true,
+    "external_kotlin_android_plugin": false,
+    "jvm_target": 17,
+    "explicit_api_mode": "strict",
+    "abi_validation_task": "checkKotlinAbi",
+    "warnings_as_errors": true,
+    "public_api_kdoc": true
+  }
+}

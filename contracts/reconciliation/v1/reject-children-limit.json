@@ -1,0 +1,19 @@
+{
+  "contract_version": 1,
+  "name": "reject-children-limit",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "limits": {"max_children_per_node": 1},
+  "previous": null,
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {},
+    "children": [
+      {"kind": "Text", "key": "first", "properties": {}, "children": []},
+      {"kind": "Text", "key": "second", "properties": {}, "children": []}
+    ]
+  },
+  "expected": {"result": "error", "code": "CHILD_COUNT_LIMIT"}
+}

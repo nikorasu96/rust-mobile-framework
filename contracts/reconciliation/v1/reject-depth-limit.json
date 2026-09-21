@@ -1,0 +1,21 @@
+{
+  "contract_version": 1,
+  "name": "reject-depth-limit",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "limits": {"max_depth": 2},
+  "previous": null,
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {},
+    "children": [
+      {"kind": "View", "key": null, "properties": {}, "children": [
+        {"kind": "Text", "key": null, "properties": {}, "children": []}
+      ]}
+    ]
+  },
+  "expected": {"result": "error", "code": "TREE_DEPTH_LIMIT"}
+}
+

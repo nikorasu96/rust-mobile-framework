@@ -1,0 +1,31 @@
+{
+  "contract_version": 1,
+  "name": "report-successfully-applied-commit",
+  "input": {
+    "abi_version": 1,
+    "operation": 4,
+    "request_id": 10,
+    "surface_id": 7,
+    "generation": 12,
+    "payload_hex": "524d5031010004001800000000000000040000000000000005000000000000000100000000000000",
+    "caller_thread": "main"
+  },
+  "expected": {
+    "result": "accepted",
+    "status": 0,
+    "code": "OK",
+    "request": {
+      "operation": "REPORT_COMMIT_RESULT",
+      "request_id": 10,
+      "surface_id": 7,
+      "generation": 12,
+      "payload_bytes": 40,
+      "payload": {
+        "base_revision": 4,
+        "target_revision": 5,
+        "outcome": "APPLIED",
+        "reason": "NONE"
+      }
+    }
+  }
+}

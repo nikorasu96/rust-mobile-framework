@@ -1,0 +1,50 @@
+{
+  "contract_version": 1,
+  "name": "keyed-reorder",
+  "base_revision": 4,
+  "target_revision": 5,
+  "allocator_next_id": 4,
+  "previous": {
+    "revision": 4,
+    "root": {
+      "node_id": 1,
+      "kind": "View",
+      "key": null,
+      "properties": {},
+      "children": [
+        {"node_id": 2, "kind": "Text", "key": "a", "properties": {"1": {"type": "string", "value": "A"}}, "children": []},
+        {"node_id": 3, "kind": "Text", "key": "b", "properties": {"1": {"type": "string", "value": "B"}}, "children": []}
+      ]
+    }
+  },
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {},
+    "children": [
+      {"kind": "Text", "key": "b", "properties": {"1": {"type": "string", "value": "B"}}, "children": []},
+      {"kind": "Text", "key": "a", "properties": {"1": {"type": "string", "value": "A"}}, "children": []}
+    ]
+  },
+  "expected": {
+    "result": "batch",
+    "operations": [
+      {"op": "MoveChild", "parent_id": 1, "child_id": 3, "from": 1, "to": 0}
+    ],
+    "committed": {
+      "revision": 5,
+      "root": {
+        "node_id": 1,
+        "kind": "View",
+        "key": null,
+        "properties": {},
+        "children": [
+          {"node_id": 3, "kind": "Text", "key": "b", "properties": {"1": {"type": "string", "value": "B"}}, "children": []},
+          {"node_id": 2, "kind": "Text", "key": "a", "properties": {"1": {"type": "string", "value": "A"}}, "children": []}
+        ]
+      }
+    },
+    "next_node_id": 4
+  }
+}
+

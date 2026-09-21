@@ -1,0 +1,18 @@
+{
+  "contract_version": 1,
+  "name": "reject-non-hexadecimal-payload",
+  "input": {
+    "abi_version": 1,
+    "operation": 3,
+    "request_id": 5,
+    "surface_id": 7,
+    "generation": 2,
+    "payload_hex": "not-hex",
+    "caller_thread": "main"
+  },
+  "expected": {
+    "result": "rejected",
+    "status": 102,
+    "code": "INVALID_ARGUMENT"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "contract_version": 1,
+  "name": "reject-unsupported-property",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "previous": null,
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {"1": {"type": "string", "value": "not view text"}},
+    "children": []
+  },
+  "expected": {"result": "error", "code": "UNSUPPORTED_PROPERTY"}
+}

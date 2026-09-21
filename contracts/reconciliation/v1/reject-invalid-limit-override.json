@@ -1,0 +1,11 @@
+{
+  "contract_version": 1,
+  "name": "reject-invalid-limit-override",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "limits": {"max_nodes": 0},
+  "previous": null,
+  "candidate": {"kind": "View", "key": null, "properties": {}, "children": []},
+  "expected": {"result": "error", "code": "INVALID_LIMITS"}
+}

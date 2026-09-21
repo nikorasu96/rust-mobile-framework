@@ -1,0 +1,43 @@
+{
+  "contract_version": 1,
+  "name": "remove-subtree",
+  "base_revision": 5,
+  "target_revision": 6,
+  "allocator_next_id": 4,
+  "previous": {
+    "revision": 5,
+    "root": {
+      "node_id": 1,
+      "kind": "View",
+      "key": null,
+      "properties": {},
+      "children": [
+        {
+          "node_id": 2,
+          "kind": "View",
+          "key": "panel",
+          "properties": {},
+          "children": [
+            {"node_id": 3, "kind": "Text", "key": "message", "properties": {}, "children": []}
+          ]
+        }
+      ]
+    }
+  },
+  "candidate": {"kind": "View", "key": null, "properties": {}, "children": []},
+  "expected": {
+    "result": "batch",
+    "operations": [
+      {"op": "RemoveChild", "parent_id": 1, "child_id": 2, "index": 0},
+      {"op": "RemoveChild", "parent_id": 2, "child_id": 3, "index": 0},
+      {"op": "Delete", "node_id": 3},
+      {"op": "Delete", "node_id": 2}
+    ],
+    "committed": {
+      "revision": 6,
+      "root": {"node_id": 1, "kind": "View", "key": null, "properties": {}, "children": []}
+    },
+    "next_node_id": 4
+  }
+}
+

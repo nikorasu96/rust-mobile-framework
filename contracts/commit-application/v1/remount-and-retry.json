@@ -1,0 +1,24 @@
+{
+  "contract_version": 1,
+  "name": "remount-and-retry",
+  "initial": {"state": "ready", "revision": 2},
+  "actions": [
+    {"op": "begin_apply", "base_revision": 2, "target_revision": 3},
+    {"op": "host_failed", "code": "NATIVE_OPERATION_FAILED"},
+    {"op": "begin_remount"},
+    {"op": "remount_succeeded"},
+    {"op": "begin_apply", "base_revision": 2, "target_revision": 3},
+    {"op": "host_applied"}
+  ],
+  "expected": {
+    "outputs": [
+      {"result": "apply_started", "base_revision": 2, "target_revision": 3},
+      {"result": "recovery_required", "code": "NATIVE_OPERATION_FAILED", "revision": 2},
+      {"result": "remount_started", "revision": 2},
+      {"result": "surface_restored", "revision": 2},
+      {"result": "apply_started", "base_revision": 2, "target_revision": 3},
+      {"result": "commit_promoted", "revision": 3}
+    ],
+    "final": {"state": "ready", "revision": 3}
+  }
+}

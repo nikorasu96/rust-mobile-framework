@@ -1,0 +1,13 @@
+{
+  "contract_version": 1,
+  "name": "reject-invalid-committed-revision",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 2,
+  "previous": {
+    "revision": -1,
+    "root": {"node_id": 1, "kind": "View", "key": null, "properties": {}, "children": []}
+  },
+  "candidate": {"kind": "View", "key": null, "properties": {}, "children": []},
+  "expected": {"result": "error", "code": "INVALID_COMMITTED_TREE"}
+}

@@ -1,0 +1,20 @@
+{
+  "contract_version": 1,
+  "name": "create failure is terminal and callbacks stay suppressed",
+  "actions": [
+    {"type": "request_create", "caller_thread": "main"},
+    {"type": "native_create_failed", "caller_thread": "main", "reason": "HOST_UNAVAILABLE"},
+    {"type": "request_close", "caller_thread": "main"},
+    {"type": "native_callback", "caller_thread": "main", "surface_id": 1, "generation": 1, "sequence": 1}
+  ],
+  "expected": {
+    "final_state": {"state": "FAILED", "handle": null, "last_sequence": 0, "failure": "CREATE_HOST_UNAVAILABLE", "queued_from": null},
+    "effects": [
+      {"type": "CALL_NATIVE_CREATE"},
+      {"type": "NONE"},
+      {"type": "NONE"},
+      {"type": "DROP_CALLBACK"}
+    ],
+    "error": null
+  }
+}

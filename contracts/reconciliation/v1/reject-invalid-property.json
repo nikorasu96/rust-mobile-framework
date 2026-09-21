@@ -1,0 +1,15 @@
+{
+  "contract_version": 1,
+  "name": "reject-invalid-property",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "previous": null,
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {"4": {"type": "f64", "value": "NaN"}},
+    "children": []
+  },
+  "expected": {"result": "error", "code": "INVALID_PROPERTY_VALUE"}
+}

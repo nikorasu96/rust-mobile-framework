@@ -1,0 +1,108 @@
+{
+  "contract_version": 1,
+  "kind": "typed_body",
+  "cases": [
+    {
+      "name": "valid-click-event",
+      "body_kind": "event",
+      "body_hex": "2a0000000000000001000000010000000000000000000000",
+      "expected": {
+        "result": "accepted",
+        "body": {"node_id": 42, "event": "CLICK", "sequence": 1}
+      }
+    },
+    {
+      "name": "reject-short-event-body",
+      "body_kind": "event",
+      "body_hex": "2a00000000000000010000000100000000000000000000",
+      "expected": {"result": "rejected", "code": "INVALID_BODY_LENGTH"}
+    },
+    {
+      "name": "reject-zero-node-id",
+      "body_kind": "event",
+      "body_hex": "000000000000000001000000010000000000000000000000",
+      "expected": {"result": "rejected", "code": "INVALID_NODE_ID"}
+    },
+    {
+      "name": "reject-unknown-event",
+      "body_kind": "event",
+      "body_hex": "2a0000000000000002000000010000000000000000000000",
+      "expected": {"result": "rejected", "code": "UNKNOWN_EVENT_CODE"}
+    },
+    {
+      "name": "reject-zero-event-sequence",
+      "body_kind": "event",
+      "body_hex": "2a0000000000000001000000000000000000000000000000",
+      "expected": {"result": "rejected", "code": "INVALID_EVENT_SEQUENCE"}
+    },
+    {
+      "name": "reject-event-flags",
+      "body_kind": "event",
+      "body_hex": "2a0000000000000001000100010000000000000000000000",
+      "expected": {"result": "rejected", "code": "NONZERO_BODY_FLAGS"}
+    },
+    {
+      "name": "reject-event-reserved",
+      "body_kind": "event",
+      "body_hex": "2a0000000000000001000000010000000000000001000000",
+      "expected": {"result": "rejected", "code": "NONZERO_BODY_RESERVED"}
+    },
+    {
+      "name": "valid-applied-commit",
+      "body_kind": "commit_result",
+      "body_hex": "040000000000000005000000000000000100000000000000",
+      "expected": {
+        "result": "accepted",
+        "body": {"base_revision": 4, "target_revision": 5, "outcome": "APPLIED", "reason": "NONE"}
+      }
+    },
+    {
+      "name": "valid-rejected-commit",
+      "body_kind": "commit_result",
+      "body_hex": "040000000000000005000000000000000200010000000000",
+      "expected": {
+        "result": "accepted",
+        "body": {"base_revision": 4, "target_revision": 5, "outcome": "REJECTED_BEFORE_MUTATION", "reason": "HOST_VALIDATION"}
+      }
+    },
+    {
+      "name": "valid-partial-failure",
+      "body_kind": "commit_result",
+      "body_hex": "040000000000000005000000000000000300020000000000",
+      "expected": {
+        "result": "accepted",
+        "body": {"base_revision": 4, "target_revision": 5, "outcome": "FAILED_AFTER_MUTATION", "reason": "HOST_UNAVAILABLE"}
+      }
+    },
+    {
+      "name": "reject-nonconsecutive-revision",
+      "body_kind": "commit_result",
+      "body_hex": "040000000000000006000000000000000100000000000000",
+      "expected": {"result": "rejected", "code": "INVALID_REVISION"}
+    },
+    {
+      "name": "reject-unknown-outcome",
+      "body_kind": "commit_result",
+      "body_hex": "040000000000000005000000000000000400000000000000",
+      "expected": {"result": "rejected", "code": "UNKNOWN_COMMIT_OUTCOME"}
+    },
+    {
+      "name": "reject-unknown-reason",
+      "body_kind": "commit_result",
+      "body_hex": "040000000000000005000000000000000100040000000000",
+      "expected": {"result": "rejected", "code": "UNKNOWN_COMMIT_REASON"}
+    },
+    {
+      "name": "reject-invalid-outcome-reason-pair",
+      "body_kind": "commit_result",
+      "body_hex": "040000000000000005000000000000000100010000000000",
+      "expected": {"result": "rejected", "code": "INVALID_OUTCOME_REASON"}
+    },
+    {
+      "name": "reject-commit-flags",
+      "body_kind": "commit_result",
+      "body_hex": "040000000000000005000000000000000100000001000000",
+      "expected": {"result": "rejected", "code": "NONZERO_BODY_FLAGS"}
+    }
+  ]
+}

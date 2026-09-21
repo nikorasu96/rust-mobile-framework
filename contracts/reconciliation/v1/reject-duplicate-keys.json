@@ -1,0 +1,19 @@
+{
+  "contract_version": 1,
+  "name": "reject-duplicate-keys",
+  "base_revision": 0,
+  "target_revision": 1,
+  "allocator_next_id": 1,
+  "previous": null,
+  "candidate": {
+    "kind": "View",
+    "key": null,
+    "properties": {},
+    "children": [
+      {"kind": "Text", "key": "same", "properties": {}, "children": []},
+      {"kind": "Text", "key": "same", "properties": {}, "children": []}
+    ]
+  },
+  "expected": {"result": "error", "code": "DUPLICATE_SIBLING_KEY"}
+}
+
