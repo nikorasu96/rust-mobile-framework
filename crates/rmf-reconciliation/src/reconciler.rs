@@ -254,17 +254,13 @@ fn property_delta(
                 removed.push(old.id());
                 previous_index += 1;
             }
-            (Some(_), Some(new)) => {
+            (Some(_), Some(new)) | (None, Some(new)) => {
                 changed.push(new.clone());
                 candidate_index += 1;
             }
             (Some(old), None) => {
                 removed.push(old.id());
                 previous_index += 1;
-            }
-            (None, Some(new)) => {
-                changed.push(new.clone());
-                candidate_index += 1;
             }
             (None, None) => break,
         }
