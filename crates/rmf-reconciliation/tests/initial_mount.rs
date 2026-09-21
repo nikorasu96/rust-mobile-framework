@@ -98,12 +98,10 @@ fn identical_candidate_prepares_an_empty_incremental_batch() {
         .unwrap_or_else(|error| unreachable!("initial mount must prepare: {error}"))
         .into_snapshot();
 
-    let previous_root_id = first
-        .root()
-        .map_or_else(
-            || unreachable!("fixture root exists"),
-            rmf_reconciliation::CommittedNode::node_id,
-        );
+    let previous_root_id = first.root().map_or_else(
+        || unreachable!("fixture root exists"),
+        rmf_reconciliation::CommittedNode::node_id,
+    );
     let prepared = reconciler
         .prepare(&first, &candidate())
         .unwrap_or_else(|error| unreachable!("stable tree must prepare: {error}"));
