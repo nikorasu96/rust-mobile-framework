@@ -168,10 +168,7 @@ impl SurfaceRegistry {
     ///
     /// Returns [`CreateSurfaceError::AlreadyActive`] for a duplicate logical slot or
     /// [`CreateSurfaceError::GenerationExhausted`] after the allocator reaches `u64::MAX`.
-    pub fn create(
-        &mut self,
-        surface_id: SurfaceId,
-    ) -> Result<SurfaceHandle, CreateSurfaceError> {
+    pub fn create(&mut self, surface_id: SurfaceId) -> Result<SurfaceHandle, CreateSurfaceError> {
         if self.active.contains_key(&surface_id) {
             return Err(CreateSurfaceError::AlreadyActive(surface_id));
         }
@@ -208,10 +205,7 @@ impl SurfaceRegistry {
     /// # Errors
     ///
     /// Returns [`StaleSurfaceHandle`] when the logical slot is absent or has another generation.
-    pub fn resolve(
-        &self,
-        handle: SurfaceHandle,
-    ) -> Result<SurfaceAccess<'_>, StaleSurfaceHandle> {
+    pub fn resolve(&self, handle: SurfaceHandle) -> Result<SurfaceAccess<'_>, StaleSurfaceHandle> {
         if self.active.get(&handle.surface_id) != Some(&handle.generation) {
             return Err(StaleSurfaceHandle { handle });
         }
@@ -279,8 +273,14 @@ mod tests {
             registry.resolve(stale).err(),
             Some(StaleSurfaceHandle { handle: stale })
         );
-        assert_eq!(registry.dispose(stale), Err(StaleSurfaceHandle { handle: stale }));
-        assert_eq!(registry.resolve(current).map(|access| access.handle()), Ok(current));
+        assert_eq!(
+            registry.dispose(stale),
+            Err(StaleSurfaceHandle { handle: stale })
+        );
+        assert_eq!(
+            registry.resolve(current).map(|access| access.handle()),
+            Ok(current)
+        );
     }
 
     #[test]

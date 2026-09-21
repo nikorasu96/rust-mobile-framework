@@ -99,16 +99,15 @@ impl Display for BudgetExceeded {
                 name,
                 actual,
                 budget,
-            } => write!(
-                formatter,
-                "{name} exceeded budget: {actual:?} > {budget:?}"
-            ),
+            } => write!(formatter, "{name} exceeded budget: {actual:?} > {budget:?}"),
             Self::Bytes { actual, budget } => {
-                write!(formatter, "frame exceeded budget: {actual} bytes > {budget} bytes")
+                write!(
+                    formatter,
+                    "frame exceeded budget: {actual} bytes > {budget} bytes"
+                )
             }
         }
     }
 }
 
 impl Error for BudgetExceeded {}
-

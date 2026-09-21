@@ -80,7 +80,10 @@ mod tests {
         let mut runtime = Runtime::new(HeadlessRenderer::default());
 
         assert!(runtime.mount(&tree).is_ok());
-        assert_eq!(runtime.renderer().last_frame(), Some("View#1\n  Text(Hello)#2\n"));
+        assert_eq!(
+            runtime.renderer().last_frame(),
+            Some("View#1\n  Text(Hello)#2\n")
+        );
     }
 
     #[test]
@@ -104,4 +107,3 @@ mod tests {
         assert_eq!(renderer.last_frame(), Some("Text(Next)#2\n"));
     }
 }
-

@@ -62,7 +62,11 @@ impl UiNode {
     /// Creates a node. Tree-wide invariants are checked by [`UiTree::new`].
     #[must_use]
     pub fn new(id: NodeId, element: Element, children: Vec<Self>) -> Self {
-        Self { id, element, children }
+        Self {
+            id,
+            element,
+            children,
+        }
     }
 
     /// Returns this node's stable identity.
@@ -83,7 +87,6 @@ impl UiNode {
         &self.children
     }
 }
-
 /// A declarative tree that satisfies all core structural invariants.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct UiTree {
@@ -203,4 +206,3 @@ mod tests {
         assert!(UiTree::new(tree).is_ok());
     }
 }
-
