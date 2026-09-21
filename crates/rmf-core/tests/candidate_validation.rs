@@ -1,8 +1,8 @@
 //! Public contract coverage for declarative candidate validation.
 
 use rmf_core::candidate::{
-    CandidateError, CandidateLimits, ComponentKind, DeclarativeNode, FiniteF64, Key,
-    PropertyEntry, PropertyId, PropertySet, PropertyValue, ValidatedTree,
+    CandidateError, CandidateLimits, ComponentKind, DeclarativeNode, FiniteF64, Key, PropertyEntry,
+    PropertyId, PropertySet, PropertyValue, ValidatedTree,
 };
 
 fn property_id(value: u32) -> PropertyId {
@@ -19,11 +19,7 @@ fn properties(entries: Vec<PropertyEntry>) -> PropertySet {
     }
 }
 
-fn node(
-    kind: ComponentKind,
-    key: Option<&str>,
-    children: Vec<DeclarativeNode>,
-) -> DeclarativeNode {
+fn node(kind: ComponentKind, key: Option<&str>, children: Vec<DeclarativeNode>) -> DeclarativeNode {
     DeclarativeNode::new(
         kind,
         key.map(|value| Key::new(String::from(value))),

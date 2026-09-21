@@ -337,10 +337,7 @@ impl ValidatedTree {
     /// # Errors
     ///
     /// Returns [`CandidateError`] for structural, schema or defensive-limit failures.
-    pub fn new(
-        root: DeclarativeNode,
-        limits: CandidateLimits,
-    ) -> Result<Self, CandidateError> {
+    pub fn new(root: DeclarativeNode, limits: CandidateLimits) -> Result<Self, CandidateError> {
         let node_count = validate_node(&root, limits, 1)?;
         Ok(Self { root, node_count })
     }
@@ -400,9 +397,7 @@ impl Display for CandidateError {
             Self::DepthLimitExceeded => formatter.write_str("candidate depth limit exceeded"),
             Self::NodeLimitExceeded => formatter.write_str("candidate node limit exceeded"),
             Self::ChildLimitExceeded => formatter.write_str("candidate child limit exceeded"),
-            Self::PropertyLimitExceeded => {
-                formatter.write_str("candidate property limit exceeded")
-            }
+            Self::PropertyLimitExceeded => formatter.write_str("candidate property limit exceeded"),
             Self::StringLimitExceeded { property_id } => write!(
                 formatter,
                 "string property {} exceeds its byte limit",
@@ -474,12 +469,11 @@ fn validate_properties(
     limits: CandidateLimits,
 ) -> Result<(), CandidateError> {
     for entry in node.properties.entries() {
-        let expected = property_schema(node.kind, entry.id).ok_or(
-            CandidateError::UnsupportedProperty {
+        let expected =
+            property_schema(node.kind, entry.id).ok_or(CandidateError::UnsupportedProperty {
                 kind: node.kind,
                 property_id: entry.id,
-            },
-        )?;
+            })?;
         if expected != entry.value.property_type() {
             return Err(CandidateError::InvalidPropertyType {
                 kind: node.kind,
