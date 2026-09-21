@@ -40,3 +40,4 @@ All notable changes follow semantic versioning once a public API is released.
 - Accepted ADR-0010 with executable exclusive-container ownership and exact-root detach semantics.
 - Added bounded exhaustive exploration of Android container ownership with shared safety invariants.
 - Accepted ADR-0011 and added executable composition of Android facade, container and surface lifecycles.
+- Implemented the ADR-0005 generational surface registry in safe Rust with CI build gates.

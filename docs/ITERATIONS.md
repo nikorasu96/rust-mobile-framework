@@ -1214,3 +1214,26 @@ execution. No dependency or critical debt was added.
 
 Add bounded exhaustive exploration of composed start, native result, callback and close
 interleavings before translating the contract into Kotlin/JNI source.
+
+## 2026-09-21 — Rust generational surface registry
+
+### Acceptance criteria
+
+- Replace the surface-lifecycle specification gap with safe production Rust in `rmf-runtime`.
+- Make zero identities, duplicate logical slots, stale generations and allocator exhaustion
+  explicit typed failures without panic or `unsafe`.
+- Preserve the independent contract evidence while making Rust CI mandatory before `main`.
+- Verify formatting, Clippy, tests, rustdoc, architecture and the release benchmark remotely.
+
+### Delivered
+
+- Added `SurfaceId`, opaque monotonic generations, complete handles and a serialized registry.
+- Added exact-handle callback admission and disposal, logical-slot reuse isolation and explicit
+  `u64` exhaustion without generation wraparound.
+- Added six Rust unit tests, including compile-time `Send + Sync` checks.
+- Added a pinned GitHub Actions gate because the local execution image has no Rust toolchain.
+
+### Validation evidence
+
+The final CI run, commit SHA and measured benchmark are recorded only after the branch passes all
+required gates. Python remains independent test support and is not the production implementation.

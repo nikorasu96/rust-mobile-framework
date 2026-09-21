@@ -4,6 +4,8 @@ use std::error::Error;
 
 use rmf_core::UiTree;
 
+pub mod surface;
+
 /// Outbound port implemented by platform-specific renderers.
 pub trait Renderer {
     /// Renderer-specific failure exposed without coupling the runtime to an adapter.
@@ -93,4 +95,3 @@ mod tests {
         assert_eq!(runtime.renderer().calls, 1);
     }
 }
-

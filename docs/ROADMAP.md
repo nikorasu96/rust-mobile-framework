@@ -24,6 +24,7 @@
 - [x] Specify generational surface creation, disposal and stale-callback rejection.
 - [x] Add deterministic generated tests for surface lifecycle invariants.
 - [x] Exhaustively explore bounded lifecycle states, handles and isolation invariants.
+- [x] Implement and compile the generational surface registry in Rust.
 - [ ] Implement and compile the reconciliation crate against every v1 contract.
 - [ ] Add coverage-guided fuzzing once the compiled Rust reconciler exists.
 - [ ] Benchmark mount/update/remove workloads at representative tree sizes.
