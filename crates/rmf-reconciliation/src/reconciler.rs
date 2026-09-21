@@ -54,7 +54,7 @@ pub enum ReconcileError {
         /// Configured maximum operation count.
         limit: u32,
     },
-    /// The candidate changes tree structure, which is outside the stable-tree increment.
+    /// The candidate requires an unsupported structural change.
     StructuralChangeUnsupported,
     /// Trusted canonical state violated an internal invariant.
     InvariantViolation,
@@ -72,8 +72,9 @@ impl Display for ReconcileError {
                     "mutation batch exceeds the {limit}-operation limit"
                 )
             }
-            Self::StructuralChangeUnsupported => formatter
-                .write_str("structural insert, removal, replacement or reorder is not implemented"),
+            Self::StructuralChangeUnsupported => formatter.write_str(
+                "structural insert, removal, replacement or multiple-child reorder is not implemented",
+            ),
             Self::InvariantViolation => formatter.write_str("reconciliation invariant violated"),
         }
     }
@@ -111,7 +112,7 @@ impl Reconciler {
             .ok_or(ReconcileError::RevisionExhausted)?;
         let mut builder = CommitBuilder::new(current.next_identity(), self.limits.max_operations);
         let root = match current.root() {
-            Some(previous) => builder.reconcile_stable(previous, candidate.root())?,
+            Some(previous) => builder.reconcile_node(previous, candidate.root())?,
             None => builder.create_subtree(candidate.root())?,
         };
         let batch = MutationBatch::new(current.revision(), target_revision, builder.operations);
@@ -174,15 +175,12 @@ impl CommitBuilder {
         ))
     }
 
-    fn reconcile_stable(
+    fn reconcile_node(
         &mut self,
         previous: &CommittedNode,
         candidate: &DeclarativeNode,
     ) -> Result<CommittedNode, ReconcileError> {
-        if previous.kind() != candidate.kind()
-            || previous.key() != candidate.key()
-            || previous.children().len() != candidate.children().len()
-        {
+        if previous.kind() != candidate.kind() || previous.key() != candidate.key() {
             return Err(ReconcileError::StructuralChangeUnsupported);
         }
 
@@ -195,12 +193,7 @@ impl CommitBuilder {
             })?;
         }
 
-        let mut children = Vec::with_capacity(candidate.children().len());
-        for (previous_child, candidate_child) in
-            previous.children().iter().zip(candidate.children().iter())
-        {
-            children.push(self.reconcile_stable(previous_child, candidate_child)?);
-        }
+        let children = self.reconcile_children(previous, candidate)?;
 
         Ok(CommittedNode::new(
             previous.node_id(),
@@ -209,6 +202,45 @@ impl CommitBuilder {
             candidate.properties().clone(),
             children,
         ))
+    }
+
+    fn reconcile_children(
+        &mut self,
+        previous_parent: &CommittedNode,
+        candidate_parent: &DeclarativeNode,
+    ) -> Result<Vec<CommittedNode>, ReconcileError> {
+        let previous = previous_parent.children();
+        let candidate = candidate_parent.children();
+        if previous.len() != candidate.len() {
+            return Err(ReconcileError::StructuralChangeUnsupported);
+        }
+
+        let movement = if keys_match_in_order(previous, candidate) {
+            None
+        } else {
+            Some(
+                detect_single_keyed_move(previous, candidate)
+                    .ok_or(ReconcileError::StructuralChangeUnsupported)?,
+            )
+        };
+
+        if let Some(movement) = movement {
+            self.push(Mutation::MoveChild {
+                parent_id: previous_parent.node_id(),
+                child_id: previous[movement.from].node_id(),
+                from: checked_index(movement.from)?,
+                to: checked_index(movement.to)?,
+            })?;
+        }
+
+        let mut children = Vec::with_capacity(candidate.len());
+        for (candidate_index, candidate_child) in candidate.iter().enumerate() {
+            let previous_index = movement.map_or(candidate_index, |movement| {
+                movement.previous_index(candidate_index)
+            });
+            children.push(self.reconcile_node(&previous[previous_index], candidate_child)?);
+        }
+        Ok(children)
     }
 
     fn allocate_identity(&mut self) -> Result<NodeId, ReconcileError> {
@@ -225,6 +257,93 @@ impl CommitBuilder {
         self.operations.push(mutation);
         Ok(())
     }
+}
+
+#[derive(Clone, Copy)]
+struct SingleMove {
+    from: usize,
+    to: usize,
+}
+
+impl SingleMove {
+    const fn previous_index(self, candidate_index: usize) -> usize {
+        if candidate_index == self.to {
+            self.from
+        } else if self.from < self.to
+            && candidate_index >= self.from
+            && candidate_index < self.to
+        {
+            candidate_index + 1
+        } else if self.from > self.to
+            && candidate_index > self.to
+            && candidate_index <= self.from
+        {
+            candidate_index - 1
+        } else {
+            candidate_index
+        }
+    }
+}
+
+fn checked_index(value: usize) -> Result<ChildIndex, ReconcileError> {
+    ChildIndex::from_usize(value).ok_or(ReconcileError::ChildIndexOverflow)
+}
+
+fn keys_match_in_order(previous: &[CommittedNode], candidate: &[DeclarativeNode]) -> bool {
+    previous
+        .iter()
+        .zip(candidate)
+        .all(|(previous, candidate)| previous.key() == candidate.key())
+}
+
+fn detect_single_keyed_move(
+    previous: &[CommittedNode],
+    candidate: &[DeclarativeNode],
+) -> Option<SingleMove> {
+    let first_mismatch = previous
+        .iter()
+        .zip(candidate)
+        .position(|(previous, candidate)| previous.key() != candidate.key())?;
+
+    let moved_earlier = candidate[first_mismatch].key().and_then(|candidate_key| {
+        previous
+            .iter()
+            .enumerate()
+            .skip(first_mismatch + 1)
+            .find(|(_, previous)| previous.key() == Some(candidate_key))
+            .map(|(from, _)| SingleMove {
+                from,
+                to: first_mismatch,
+            })
+    });
+    if moved_earlier.is_some_and(|movement| single_move_matches(previous, candidate, movement)) {
+        return moved_earlier;
+    }
+
+    let moved_later = previous[first_mismatch].key().and_then(|previous_key| {
+        candidate
+            .iter()
+            .enumerate()
+            .skip(first_mismatch + 1)
+            .find(|(_, candidate)| candidate.key() == Some(previous_key))
+            .map(|(to, _)| SingleMove {
+                from: first_mismatch,
+                to,
+            })
+    });
+    moved_later.filter(|movement| single_move_matches(previous, candidate, *movement))
+}
+
+fn single_move_matches(
+    previous: &[CommittedNode],
+    candidate: &[DeclarativeNode],
+    movement: SingleMove,
+) -> bool {
+    candidate.iter().enumerate().all(|(candidate_index, candidate)| {
+        let previous_index = movement.previous_index(candidate_index);
+        previous[previous_index].key().is_some()
+            && previous[previous_index].key() == candidate.key()
+    })
 }
 
 fn property_delta(

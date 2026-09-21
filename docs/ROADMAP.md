@@ -21,6 +21,7 @@
 - [x] Implement the validated declarative candidate model without caller-assigned runtime IDs.
 - [x] Implement deterministic initial-mount reconciliation and immutable snapshots in Rust.
 - [x] Preserve identities and reconcile properties on structurally stable trees.
+- [x] Implement and benchmark deterministic single-child keyed movement in Rust.
 - [x] Specify commit application, promotion and full-remount recovery semantics.
 - [x] Add deterministic generated tests for commit-state safety invariants.
 - [x] Exhaustively explore bounded commit-state transitions and recovery boundaries.
@@ -31,7 +32,7 @@
 - [x] Route creation, disposal and callback admission through the Rust runtime use case.
 - [ ] Implement and compile the reconciliation crate against every v1 contract.
 - [ ] Add coverage-guided fuzzing once the compiled Rust reconciler exists.
-- [ ] Benchmark mount/update/remove workloads at representative tree sizes.
+- [ ] Benchmark general update/remove workloads at representative tree sizes.
 
 ## Phase 2 — Android vertical slice
 

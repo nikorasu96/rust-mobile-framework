@@ -1413,3 +1413,32 @@ implementation was added.
 
 Select and benchmark a non-quadratic child-order strategy, then implement structural insert,
 remove, replacement and keyed reorder with their reviewed Rust contracts.
+
+## 2026-09-21 — Bounded keyed child movement in Rust
+
+### Acceptance criteria
+
+- Detect one keyed child relocation per sibling list with linear work and deterministic output.
+- Preserve every matching runtime identity and emit exactly one checked `MoveChild` mutation.
+- Reject multi-move permutations atomically until a general order-maintenance strategy is measured.
+- Add a representative 1,000-sibling release budget to the compiled performance gate.
+
+### Delivered
+
+- Added production Rust reconciliation for one child moving earlier or later among keyed siblings.
+- Added a candidate-to-previous index mapping that rebuilds immutable snapshots in candidate order.
+- Kept insertions, removals, replacements and multi-move permutations behind the typed structural
+  rejection boundary.
+- Added Rust contracts for both movement directions, identity preservation and atomic rejection.
+- Extended the release harness with a 1,000-sibling keyed-move workload.
+
+### Validation evidence
+
+Final Rust counts, CI evidence and benchmark measurements will be recorded after the exact branch
+passes formatting, strict Clippy, tests, rustdoc, architecture checks and release budgets. No new
+Python implementation is part of this increment.
+
+### Next increment
+
+Implement keyed insertion and removal with deterministic detach/delete ordering, preserving the
+single-move linear path and adding dedicated mutation benchmarks.

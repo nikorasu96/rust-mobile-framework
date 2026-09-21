@@ -7,7 +7,8 @@ This file records observed capability, not branding or claimed drop-in compatibi
 | Declarative tree model | Experimental | `rmf-core` tests | Only `View` and `Text` |
 | Declarative candidate validation | Rust implementation | `rmf-core::candidate`, typed schema and defensive-limit tests | No TypeScript facade or runtime integration |
 | Initial tree reconciliation | Rust implementation | `rmf-reconciliation` initial-mount contract tests | No structural keyed diff or runtime host application |
-| Stable-tree property updates | Rust implementation | identity-preservation, set/remove and atomic-rejection Rust tests | No insert, remove, replace or reorder |
+| Stable-tree property updates | Rust implementation | identity-preservation, set/remove and atomic-rejection Rust tests | No insert, remove or replace |
+| Keyed child reorder | Partial Rust implementation | single-move identity, direction and atomic multi-move rejection tests | One move per sibling list; no general reorder |
 | Runtime mount port | Experimental | `rmf-runtime` contract test | Full-tree mount only |
 | Commit application and recovery | Executable contract | ADR-0004, eight reviewed fixtures, 800 generated actions and 567 exhaustive transitions | No compiled mutation host port or unbounded proof |
 | Surface lifecycle | Rust implementation | `Runtime` lifecycle API, `rmf-runtime::surface`, Rust unit/integration tests, ADR-0005, six fixtures, 800 generated actions and 1,008 exhaustive transitions | No Android adapter, concurrent executor stress or unbounded proof |

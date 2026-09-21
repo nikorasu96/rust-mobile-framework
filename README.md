@@ -19,8 +19,8 @@ declarative tree -> validation -> runtime port -> headless renderer
 ## Repository map
 
 - `crates/rmf-core`: platform-independent UI model and invariants.
-- `crates/rmf-reconciliation`: planned pure commit service; API boundary accepted in ADR-0003,
-  source deferred until the Rust build gate is available.
+- `crates/rmf-reconciliation`: compiled pure commit service for runtime-owned identities,
+  immutable snapshots and deterministic mutation batches.
 - `crates/rmf-runtime`: use-case orchestration and renderer ports.
 - `adapters/rmf-renderer-headless`: deterministic outbound adapter for tests/tools.
 - `examples/hello-headless`: executable composition root.
