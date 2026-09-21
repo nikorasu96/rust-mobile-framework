@@ -254,7 +254,7 @@ fn property_delta(
                 removed.push(old.id());
                 previous_index += 1;
             }
-            (Some(_), Some(new)) | (None, Some(new)) => {
+            (Some(_) | None, Some(new)) => {
                 changed.push(new.clone());
                 candidate_index += 1;
             }
