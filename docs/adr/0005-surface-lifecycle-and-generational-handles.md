@@ -66,7 +66,9 @@ creation, duplicate rejection, disposal, stale callback rejection and allocator 
 reuse, stale callback/disposal rejection, isolation between surfaces and allocator exhaustion.
 The dependency-free Python model remains an independent executable specification. Production
 identity allocation, creation, disposal and callback admission are implemented in
-`rmf-runtime::surface` and verified with the pinned Rust toolchain in CI.
+`rmf-runtime::surface`, exposed through the runtime use case and verified with the pinned Rust
+toolchain in CI. Rust integration tests reproduce the reviewed create/callback/dispose and stale
+replacement flows without making the runtime depend on fixture serialization.
 
 ## Consequences
 

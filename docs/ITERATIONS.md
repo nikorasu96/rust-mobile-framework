@@ -1254,4 +1254,42 @@ execution claim.
 ### Next increment
 
 Move a first reviewed surface-lifecycle fixture into a Rust integration contract test while
-extending the Rust runtime orchestration to consume the registry through a narrow internal port.
+extending the Rust runtime orchestration through a narrow use-case API.
+
+## 2026-09-21 — Runtime surface orchestration in Rust
+
+### Acceptance criteria
+
+- Make the runtime own the surface registry instead of requiring callers to compose it manually.
+- Route creation, exact-handle disposal and callback admission through explicit Rust use cases.
+- Guarantee that rejected callbacks cannot execute user code.
+- Translate reviewed lifecycle scenarios into integration tests against the public Rust API.
+
+### Delivered
+
+- Extended `Runtime<R>` with typed surface creation, disposal and callback dispatch operations.
+- Kept rendering behind the existing small `Renderer` port and surface state inside the runtime.
+- Used a one-shot callback so admission is checked immediately before a single invocation.
+- Added two integration tests reproducing create/callback/dispose, duplicate creation and stale
+  callback rejection after logical-slot replacement.
+
+### Validation evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 15 tests, including two public-API lifecycle integration tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 nodes × 100 iterations; all budgets passed |
+
+[GitHub Actions run 35571454036](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/35571454036)
+measured 69,993 ns average validation, 149,924 ns average mount and a 1,007,899-byte frame.
+The prior run measured 50,141 ns and 104,980 ns on another shared runner; both remain far below
+the 1 ms and 2 ms provisional budgets. Host variance prevents treating that difference as a
+runtime regression. Python remains independent regression evidence and no new Python model was
+added.
+
+Rust's current [`FnOnce` documentation](https://doc.rust-lang.org/std/ops/trait.FnOnce.html) was
+reviewed on 2026-09-21. It matches this boundary because an admitted callback is invoked no more
+than once while still allowing callers to consume captured state.
