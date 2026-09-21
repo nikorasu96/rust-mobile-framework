@@ -1,3 +1,5 @@
+//! Public contract coverage for deterministic initial-mount reconciliation.
+
 use rmf_core::candidate::{
     CandidateLimits, ComponentKind, DeclarativeNode, Key, PropertyEntry, PropertyId, PropertySet,
     PropertyValue, ValidatedTree,
