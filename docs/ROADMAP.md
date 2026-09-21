@@ -18,6 +18,7 @@
 - [ ] Implement keyed reconciliation with deterministic mutation batches.
 - [x] Add deterministic generated tests for reconciliation invariants.
 - [x] Define the reconciliation crate boundary, ownership and public type contract.
+- [x] Implement the validated declarative candidate model without caller-assigned runtime IDs.
 - [x] Specify commit application, promotion and full-remount recovery semantics.
 - [x] Add deterministic generated tests for commit-state safety invariants.
 - [x] Exhaustively explore bounded commit-state transitions and recovery boundaries.

@@ -1,6 +1,6 @@
 # ADR-0003: Reconciliation crate boundary and public type contract
 
-- Status: Accepted boundary; implementation blocked by TD-001
+- Status: Accepted boundary; declarative input implemented, reconciliation crate pending
 - Date: 2026-09-20
 - Depends on: ADR-0001 and ADR-0002
 

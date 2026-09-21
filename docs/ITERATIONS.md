@@ -1293,3 +1293,43 @@ added.
 Rust's current [`FnOnce` documentation](https://doc.rust-lang.org/std/ops/trait.FnOnce.html) was
 reviewed on 2026-09-21. It matches this boundary because an admitted callback is invoked no more
 than once while still allowing callers to consume captured state.
+
+## 2026-09-21 — Declarative candidate model in Rust
+
+### Acceptance criteria
+
+- Remove caller-assigned runtime node identities from the next reconciliation input model.
+- Represent component kinds and property values as closed Rust types.
+- Canonicalize property order and reject duplicate property identities before reconciliation.
+- Enforce component schemas, finite floats, sibling-key uniqueness and defensive tree limits.
+
+### Delivered
+
+- Added `rmf_core::candidate` with `DeclarativeNode`, opaque `Key`, `ComponentKind`, typed
+  properties and an opaque `ValidatedTree`.
+- Added finite canonical floating-point values and positive property identities.
+- Added fail-closed validation for the v1 `View` and `Text` schemas, text leaves, duplicate keys,
+  depth, total nodes, direct children, property count and UTF-8 string bytes.
+- Added nine Rust unit tests, including `Send + Sync` assertions and the initial candidate shape.
+
+### Validation evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 24 tests, including nine candidate-model public contract tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 nodes × 100 iterations; all budgets passed |
+
+[GitHub Actions run 35597337355](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/35597337355)
+measured 49,792 ns average validation, 105,863 ns average mount and a 1,007,899-byte frame.
+All measurements remain below their provisional budgets. The benchmark does not yet exercise
+candidate validation directly, so it is retained as a regression gate rather than evidence of
+candidate-model throughput. No new Python implementation was added; the existing oracle remains
+independent comparison evidence.
+
+### Next increment
+
+Create `rmf-reconciliation` with the immutable snapshot and deterministic initial-mount batch,
+consuming only `ValidatedTree` through the accepted inward dependency boundary.

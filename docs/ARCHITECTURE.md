@@ -6,8 +6,10 @@
 rmf-core <- rmf-reconciliation <- rmf-runtime <- platform/render adapters <- composition roots
 ```
 
-`rmf-core` owns declarative values and validation. The planned `rmf-reconciliation`
-core service owns runtime identities, immutable snapshots and pure mutation calculation;
+`rmf-core` owns declarative values and validation. Its `candidate` module removes
+caller-assigned runtime identities and enforces the closed v1 property schema and defensive
+tree limits. The planned `rmf-reconciliation` core service owns runtime identities, immutable
+snapshots and pure mutation calculation;
 its accepted boundary is ADR-0003, but source is compile-gated. `rmf-runtime` owns application
 orchestration and outbound ports. Adapters implement those ports. Composition roots select
 concrete adapters and are the only place allowed to wire them.
