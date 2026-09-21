@@ -228,6 +228,7 @@ mod tests {
         CreateSurfaceError, StaleSurfaceHandle, SurfaceGeneration, SurfaceHandle, SurfaceId,
         SurfaceRegistry,
     };
+    use std::collections::BTreeMap;
     use std::num::NonZeroU64;
 
     fn id(value: u64) -> SurfaceId {
@@ -296,13 +297,12 @@ mod tests {
 
     #[test]
     fn maximum_generation_is_used_once_then_exhausts() {
-        let maximum = match NonZeroU64::new(u64::MAX) {
-            Some(value) => value,
-            None => unreachable!("u64::MAX is non-zero"),
+        let Some(maximum) = NonZeroU64::new(u64::MAX) else {
+            unreachable!("u64::MAX is non-zero");
         };
         let mut registry = SurfaceRegistry {
             next_generation: Some(maximum),
-            active: Default::default(),
+            active: BTreeMap::default(),
         };
         let last = create(&mut registry, id(1));
 
