@@ -1314,9 +1314,20 @@ than once while still allowing callers to consume captured state.
 
 ### Validation evidence
 
-The final Rust test count, CI run and benchmark measurements are recorded after the exact branch
-passes formatting, strict Clippy, tests, rustdoc, architecture checks and release budgets. No new
-Python implementation was added; the existing oracle remains independent comparison evidence.
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 24 tests, including nine candidate-model public contract tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 nodes × 100 iterations; all budgets passed |
+
+[GitHub Actions run 35597337355](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/35597337355)
+measured 49,792 ns average validation, 105,863 ns average mount and a 1,007,899-byte frame.
+All measurements remain below their provisional budgets. The benchmark does not yet exercise
+candidate validation directly, so it is retained as a regression gate rather than evidence of
+candidate-model throughput. No new Python implementation was added; the existing oracle remains
+independent comparison evidence.
 
 ### Next increment
 
