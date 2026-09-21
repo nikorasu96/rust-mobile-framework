@@ -2,9 +2,7 @@ use rmf_core::candidate::{
     CandidateLimits, ComponentKind, DeclarativeNode, Key, PropertyEntry, PropertyId, PropertySet,
     PropertyValue, ValidatedTree,
 };
-use rmf_reconciliation::{
-    Mutation, ReconcileError, ReconcileLimits, Reconciler, SurfaceSnapshot,
-};
+use rmf_reconciliation::{Mutation, ReconcileError, ReconcileLimits, Reconciler, SurfaceSnapshot};
 
 fn property_id(value: u32) -> PropertyId {
     PropertyId::new(value).unwrap_or_else(|error| unreachable!("positive fixture ID: {error}"))
@@ -22,12 +20,7 @@ fn candidate() -> ValidatedTree {
         properties,
         vec![],
     );
-    let root = DeclarativeNode::new(
-        ComponentKind::View,
-        None,
-        PropertySet::empty(),
-        vec![text],
-    );
+    let root = DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), vec![text]);
     ValidatedTree::new(root, CandidateLimits::default())
         .unwrap_or_else(|error| unreachable!("valid fixture candidate: {error}"))
 }
@@ -67,7 +60,9 @@ fn prepares_the_initial_mount_fixture_in_topological_order() {
     ));
 
     let snapshot = prepared.into_snapshot();
-    let root = snapshot.root().unwrap_or_else(|| unreachable!("root exists"));
+    let root = snapshot
+        .root()
+        .unwrap_or_else(|| unreachable!("root exists"));
     assert_eq!(snapshot.revision().get(), 1);
     assert_eq!(root.node_id().get(), 1);
     assert_eq!(root.children()[0].node_id().get(), 2);

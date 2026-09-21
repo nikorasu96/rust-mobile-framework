@@ -65,7 +65,10 @@ impl Display for ReconcileError {
             Self::IdentityExhausted => formatter.write_str("node identity allocator exhausted"),
             Self::ChildIndexOverflow => formatter.write_str("child index exceeds the v1 protocol"),
             Self::OperationLimitExceeded { limit } => {
-                write!(formatter, "mutation batch exceeds the {limit}-operation limit")
+                write!(
+                    formatter,
+                    "mutation batch exceeds the {limit}-operation limit"
+                )
             }
             Self::IncrementalReconciliationUnavailable => {
                 formatter.write_str("incremental reconciliation is not implemented")
@@ -114,11 +117,7 @@ impl Reconciler {
             self.limits.max_operations,
         );
         let root = builder.create_subtree(candidate.root())?;
-        let batch = MutationBatch::new(
-            current.revision(),
-            target_revision,
-            builder.operations,
-        );
+        let batch = MutationBatch::new(current.revision(), target_revision, builder.operations);
         let snapshot = SurfaceSnapshot::new(target_revision, root, builder.next_node_id);
         Ok(PreparedCommit::new(batch, snapshot))
     }
@@ -159,8 +158,8 @@ impl InitialMountBuilder {
         let mut children = Vec::with_capacity(candidate.children().len());
         for (position, child_candidate) in candidate.children().iter().enumerate() {
             let child = self.create_subtree(child_candidate)?;
-            let index = ChildIndex::from_usize(position)
-                .ok_or(ReconcileError::ChildIndexOverflow)?;
+            let index =
+                ChildIndex::from_usize(position).ok_or(ReconcileError::ChildIndexOverflow)?;
             self.push(Mutation::InsertChild {
                 parent_id: node_id,
                 child_id: child.node_id(),
@@ -179,9 +178,7 @@ impl InitialMountBuilder {
     }
 
     fn allocate_identity(&mut self) -> Result<NodeId, ReconcileError> {
-        let current = self
-            .next_node_id
-            .ok_or(ReconcileError::IdentityExhausted)?;
+        let current = self.next_node_id.ok_or(ReconcileError::IdentityExhausted)?;
         self.next_node_id = current.get().checked_add(1).and_then(NonZeroU64::new);
         Ok(NodeId::from_non_zero(current))
     }
