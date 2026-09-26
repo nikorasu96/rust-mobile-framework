@@ -9,13 +9,15 @@ use rmf_core::candidate::{
 };
 use rmf_reconciliation::{MutationBatch, ReconcileLimits, Reconciler, SurfaceSnapshot};
 use rmf_runtime::commit::{
-    ApplyFailure, BatchApplier, CommitCoordinator, CommitError, CommitStatus,
+    ApplyFailure, BatchApplier, CommitCoordinator, CommitError, CommitStatus, RecoveryError,
+    SnapshotRemounter,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum HostError {
     Rejected,
     Partial,
+    Remount,
 }
 
 impl Display for HostError {
@@ -23,6 +25,7 @@ impl Display for HostError {
         match self {
             Self::Rejected => formatter.write_str("rejected"),
             Self::Partial => formatter.write_str("partial"),
+            Self::Remount => formatter.write_str("remount"),
         }
     }
 }
@@ -32,15 +35,40 @@ impl Error for HostError {}
 #[derive(Debug, Default)]
 struct RecordingApplier {
     outcomes: VecDeque<Result<(), ApplyFailure<HostError>>>,
+    remount_outcomes: VecDeque<Result<(), HostError>>,
     calls: Vec<(u64, u64, usize)>,
+    remount_calls: Vec<u64>,
 }
 
 impl RecordingApplier {
     fn with_outcome(outcome: Result<(), ApplyFailure<HostError>>) -> Self {
         Self {
             outcomes: VecDeque::from([outcome]),
+            remount_outcomes: VecDeque::new(),
             calls: Vec::new(),
+            remount_calls: Vec::new(),
         }
+    }
+
+    fn with_outcomes(
+        outcomes: impl IntoIterator<Item = Result<(), ApplyFailure<HostError>>>,
+        remount_outcomes: impl IntoIterator<Item = Result<(), HostError>>,
+    ) -> Self {
+        Self {
+            outcomes: outcomes.into_iter().collect(),
+            remount_outcomes: remount_outcomes.into_iter().collect(),
+            calls: Vec::new(),
+            remount_calls: Vec::new(),
+        }
+    }
+}
+
+impl SnapshotRemounter for RecordingApplier {
+    type Error = HostError;
+
+    fn remount_snapshot(&mut self, snapshot: &SurfaceSnapshot) -> Result<(), Self::Error> {
+        self.remount_calls.push(snapshot.revision().get());
+        self.remount_outcomes.pop_front().unwrap_or(Ok(()))
     }
 }
 
@@ -153,4 +181,79 @@ fn partial_failure_blocks_later_commits_without_calling_host() {
     );
     assert_eq!(coordinator.confirmed_snapshot().revision().get(), 0);
     assert_eq!(coordinator.applier().calls.len(), 1);
+}
+
+#[test]
+fn successful_remount_unblocks_commits_at_the_confirmed_revision() {
+    let applier = RecordingApplier::with_outcomes(
+        [
+            Err(ApplyFailure::FailedAfterMutation(HostError::Partial)),
+            Ok(()),
+        ],
+        [Ok(())],
+    );
+    let mut coordinator = CommitCoordinator::new(applier);
+    let failed = preparation(coordinator.confirmed_snapshot());
+    assert_eq!(
+        coordinator.apply(failed),
+        Err(CommitError::FailedAfterMutation(HostError::Partial))
+    );
+
+    assert_eq!(coordinator.recover(), Ok(()));
+    assert_eq!(
+        coordinator.status(),
+        CommitStatus::Ready {
+            revision: SurfaceSnapshot::empty().revision()
+        }
+    );
+    assert_eq!(coordinator.applier().remount_calls, [0]);
+
+    let retry = preparation(coordinator.confirmed_snapshot());
+    assert_eq!(coordinator.apply(retry), Ok(()));
+    assert_eq!(coordinator.confirmed_snapshot().revision().get(), 1);
+    assert_eq!(coordinator.applier().calls.len(), 2);
+}
+
+#[test]
+fn failed_remount_remains_recovery_only_and_can_be_retried() {
+    let applier = RecordingApplier::with_outcomes(
+        [Err(ApplyFailure::FailedAfterMutation(HostError::Partial))],
+        [Err(HostError::Remount), Ok(())],
+    );
+    let mut coordinator = CommitCoordinator::new(applier);
+    let failed = preparation(coordinator.confirmed_snapshot());
+    assert!(matches!(
+        coordinator.apply(failed),
+        Err(CommitError::FailedAfterMutation(HostError::Partial))
+    ));
+    let recovery_required = coordinator.status();
+
+    assert_eq!(
+        coordinator.recover(),
+        Err(RecoveryError::RemountFailed(HostError::Remount))
+    );
+    assert_eq!(coordinator.status(), recovery_required);
+    assert_eq!(coordinator.confirmed_snapshot().revision().get(), 0);
+
+    assert_eq!(coordinator.recover(), Ok(()));
+    assert_eq!(coordinator.applier().remount_calls, [0, 0]);
+    assert_eq!(
+        coordinator.status(),
+        CommitStatus::Ready {
+            revision: SurfaceSnapshot::empty().revision()
+        }
+    );
+}
+
+#[test]
+fn recovery_is_rejected_without_host_call_when_not_required() {
+    let mut coordinator = CommitCoordinator::new(RecordingApplier::default());
+
+    assert_eq!(
+        coordinator.recover(),
+        Err(RecoveryError::NotRequired {
+            revision: SurfaceSnapshot::empty().revision()
+        })
+    );
+    assert!(coordinator.applier().remount_calls.is_empty());
 }

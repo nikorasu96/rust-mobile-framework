@@ -48,6 +48,22 @@ pub trait BatchApplier {
     fn apply_batch(&mut self, batch: &MutationBatch) -> Result<(), ApplyFailure<Self::Error>>;
 }
 
+/// Capability-specific outbound port for restoring one complete confirmed snapshot.
+pub trait SnapshotRemounter {
+    /// Adapter-specific remount error.
+    type Error: Error + Send + Sync + 'static;
+
+    /// Replaces the host tree with exactly the supplied confirmed snapshot.
+    ///
+    /// Implementations must treat every call as a complete retry. The runtime may invoke this
+    /// method again after an error because host state remains unknown until a remount succeeds.
+    ///
+    /// # Errors
+    ///
+    /// Returns the adapter error when the host cannot confirm the complete snapshot.
+    fn remount_snapshot(&mut self, snapshot: &SurfaceSnapshot) -> Result<(), Self::Error>;
+}
+
 /// Observable state of commit application for one surface.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum CommitStatus {
@@ -63,6 +79,13 @@ pub enum CommitStatus {
         /// Candidate target revision.
         target: Revision,
     },
+    /// The last confirmed snapshot is currently being remounted.
+    Remounting {
+        /// Revision being restored.
+        confirmed: Revision,
+        /// Revision whose application caused recovery.
+        attempted: Revision,
+    },
     /// Host state may be partial; further commits are blocked pending remount recovery.
     RecoveryRequired {
         /// Last confirmed revision.
@@ -71,6 +94,65 @@ pub enum CommitStatus {
         attempted: Revision,
     },
 }
+
+/// Typed full-remount recovery failure.
+#[derive(Debug, Eq, PartialEq)]
+pub enum RecoveryError<E> {
+    /// The host already agrees with the confirmed revision.
+    NotRequired {
+        /// Confirmed revision.
+        revision: Revision,
+    },
+    /// A commit application is still in progress.
+    BusyApplying {
+        /// Confirmed base revision.
+        base: Revision,
+        /// Candidate target revision.
+        target: Revision,
+    },
+    /// A remount call is still in progress.
+    BusyRemounting {
+        /// Revision being restored.
+        confirmed: Revision,
+        /// Revision whose application caused recovery.
+        attempted: Revision,
+    },
+    /// The host did not confirm a complete remount; recovery may be retried.
+    RemountFailed(E),
+}
+
+impl<E> Display for RecoveryError<E>
+where
+    E: Display,
+{
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::NotRequired { revision } => write!(
+                formatter,
+                "surface at revision {} does not require recovery",
+                revision.get()
+            ),
+            Self::BusyApplying { base, target } => write!(
+                formatter,
+                "surface is applying revision {} from base {}",
+                target.get(),
+                base.get()
+            ),
+            Self::BusyRemounting {
+                confirmed,
+                attempted,
+            } => write!(
+                formatter,
+                "surface is remounting revision {} after attempting {}",
+                confirmed.get(),
+                attempted.get()
+            ),
+            Self::RemountFailed(error) => write!(formatter, "host remount failed: {error}"),
+        }
+    }
+}
+
+impl<E> Error for RecoveryError<E> where E: Error + 'static {}
 
 /// Typed commit-application failure without exposing candidate data.
 #[derive(Debug, Eq, PartialEq)]
@@ -183,6 +265,15 @@ where
             CommitStatus::Applying { base, target } => {
                 return Err(CommitError::Busy { base, target });
             }
+            CommitStatus::Remounting {
+                confirmed,
+                attempted,
+            } => {
+                return Err(CommitError::Busy {
+                    base: confirmed,
+                    target: attempted,
+                });
+            }
             CommitStatus::RecoveryRequired {
                 confirmed,
                 attempted,
@@ -248,5 +339,63 @@ where
     #[must_use]
     pub fn into_applier(self) -> A {
         self.applier
+    }
+}
+
+impl<A> CommitCoordinator<A>
+where
+    A: BatchApplier + SnapshotRemounter,
+{
+    /// Restores the last confirmed snapshot after a possibly partial host mutation.
+    ///
+    /// A failed remount leaves the coordinator recovery-only and can be retried. Only a complete
+    /// host success returns the coordinator to `Ready` and permits later commits.
+    ///
+    /// # Errors
+    ///
+    /// Rejects recovery when it is unnecessary or another host call is active. Returns the
+    /// adapter error without changing the confirmed snapshot when a remount fails.
+    pub fn recover(&mut self) -> Result<(), RecoveryError<<A as SnapshotRemounter>::Error>> {
+        let (confirmed, attempted) = match self.status {
+            CommitStatus::Ready { revision } => {
+                return Err(RecoveryError::NotRequired { revision });
+            }
+            CommitStatus::Applying { base, target } => {
+                return Err(RecoveryError::BusyApplying { base, target });
+            }
+            CommitStatus::Remounting {
+                confirmed,
+                attempted,
+            } => {
+                return Err(RecoveryError::BusyRemounting {
+                    confirmed,
+                    attempted,
+                });
+            }
+            CommitStatus::RecoveryRequired {
+                confirmed,
+                attempted,
+            } => (confirmed, attempted),
+        };
+
+        self.status = CommitStatus::Remounting {
+            confirmed,
+            attempted,
+        };
+        match self.applier.remount_snapshot(&self.confirmed) {
+            Ok(()) => {
+                self.status = CommitStatus::Ready {
+                    revision: confirmed,
+                };
+                Ok(())
+            }
+            Err(error) => {
+                self.status = CommitStatus::RecoveryRequired {
+                    confirmed,
+                    attempted,
+                };
+                Err(RecoveryError::RemountFailed(error))
+            }
+        }
     }
 }

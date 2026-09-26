@@ -50,3 +50,4 @@ All notable changes follow semantic versioning once a public API is released.
 - Added linear-time single-child keyed removal with descendant-first subtree deletion.
 - Added deterministic single-child keyed replacement with fresh runtime identities.
 - Added revision-guarded Rust batch application with apply-then-promote snapshot ownership.
+- Added retryable Rust full-snapshot remount recovery after possibly partial host mutation.

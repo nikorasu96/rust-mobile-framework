@@ -1,6 +1,6 @@
 # ADR-0004: Commit application and surface recovery
 
-- Status: Accepted; apply-then-promote implemented in Rust; full-remount recovery pending
+- Status: Accepted and implemented in the Rust runtime; platform adapters pending
 - Date: 2026-09-20
 - Depends on: ADR-0002 and ADR-0003
 
@@ -122,10 +122,10 @@ Python model is a dependency-free specification aid, not production runtime code
 
 ## Implementation status
 
-`rmf-runtime::commit` implements `BatchApplier`, explicit failure-phase classification,
-revision-guarded application, success-only snapshot promotion, safe-rejection rollback to ready
-and fail-closed blocking after a possibly partial mutation. `SnapshotRemounter` and the recovery
-transition remain the next bounded increment; no compiled code currently claims host recovery.
+`rmf-runtime::commit` implements both narrow ports, explicit failure-phase classification,
+revision-guarded application, success-only snapshot promotion and retryable recovery of the last
+confirmed snapshot. A failed remount returns to recovery-required without changing the confirmed
+snapshot. No platform adapter or Android UI-thread execution is claimed yet.
 
 ## References
 
