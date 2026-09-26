@@ -73,7 +73,7 @@ impl Display for ReconcileError {
                 )
             }
             Self::StructuralChangeUnsupported => formatter.write_str(
-                "structural replacement, multiple insertions or removals, or multiple-child reorder is not implemented",
+                "multiple structural replacements, insertions, removals or child reorders are not implemented",
             ),
             Self::InvariantViolation => formatter.write_str("reconciliation invariant violated"),
         }
@@ -220,6 +220,13 @@ impl CommitBuilder {
         if previous.len() != candidate.len() {
             return Err(ReconcileError::StructuralChangeUnsupported);
         }
+        if let Some(replacement) = detect_single_keyed_replacement(previous, candidate) {
+            return self.reconcile_single_replacement(
+                previous_parent,
+                candidate_parent,
+                replacement,
+            );
+        }
 
         let movement = if keys_match_in_order(previous, candidate) {
             None
@@ -245,6 +252,40 @@ impl CommitBuilder {
                 movement.previous_index(candidate_index)
             });
             children.push(self.reconcile_node(&previous[previous_index], candidate_child)?);
+        }
+        Ok(children)
+    }
+
+    fn reconcile_single_replacement(
+        &mut self,
+        previous_parent: &CommittedNode,
+        candidate_parent: &DeclarativeNode,
+        replacement: usize,
+    ) -> Result<Vec<CommittedNode>, ReconcileError> {
+        let previous = previous_parent.children();
+        let candidate = candidate_parent.children();
+        let removed = &previous[replacement];
+
+        self.push(Mutation::RemoveChild {
+            parent_id: previous_parent.node_id(),
+            child_id: removed.node_id(),
+            index: checked_index(replacement)?,
+        })?;
+        self.delete_subtree(removed)?;
+        let inserted = self.create_subtree(&candidate[replacement])?;
+        self.push(Mutation::InsertChild {
+            parent_id: previous_parent.node_id(),
+            child_id: inserted.node_id(),
+            index: checked_index(replacement)?,
+        })?;
+
+        let mut children = Vec::with_capacity(candidate.len());
+        for (index, candidate_child) in candidate.iter().enumerate() {
+            if index == replacement {
+                children.push(inserted.clone());
+            } else {
+                children.push(self.reconcile_node(&previous[index], candidate_child)?);
+            }
         }
         Ok(children)
     }
@@ -482,6 +523,32 @@ fn detect_single_keyed_removal(
     } else {
         None
     }
+}
+
+fn detect_single_keyed_replacement(
+    previous: &[CommittedNode],
+    candidate: &[DeclarativeNode],
+) -> Option<usize> {
+    if previous.len() != candidate.len() {
+        return None;
+    }
+
+    let mut replacement = None;
+    for (index, (previous_child, candidate_child)) in previous.iter().zip(candidate).enumerate() {
+        let compatible = previous_child.key() == candidate_child.key()
+            && previous_child.kind() == candidate_child.kind();
+        if compatible {
+            continue;
+        }
+        if replacement.is_some()
+            || previous_child.key().is_none()
+            || candidate_child.key().is_none()
+        {
+            return None;
+        }
+        replacement = Some(index);
+    }
+    replacement
 }
 
 fn single_move_matches(

@@ -1535,3 +1535,32 @@ passed. Python remains independent verification and contains no new runtime impl
 
 Implement deterministic keyed replacement as removal plus fresh subtree creation, without
 preserving identity across kind or key changes, and verify the combined operation ordering.
+
+## 2026-09-26 — Deterministic keyed subtree replacement in Rust
+
+### Acceptance criteria
+
+- Detect exactly one incompatible keyed child by kind or key with bounded linear work.
+- Never reuse the removed subtree identities for the replacement subtree.
+- Fully detach and delete the old subtree before creating and attaching the replacement.
+- Preserve every compatible sibling identity and reject multiple replacements atomically.
+- Add a 1,000-sibling release benchmark with an explicit 5 ms provisional budget.
+
+### Delivered
+
+- Added production Rust reconciliation for one keyed replacement at a stable sibling position.
+- Reused the verified detach and descendant-first deletion path before topological subtree creation.
+- Allocated replacement identities exclusively through the snapshot's monotonic private allocator.
+- Added Rust contracts for kind and key changes, nested ordering, multiple-change rejection and
+  operation-budget atomicity.
+- Extended the release harness with 100 preparations of a middle replacement among 1,000 siblings.
+- Kept unkeyed replacement, multiple structural changes and general reorder behind typed rejection.
+
+### Validation evidence
+
+CI evidence and measured release metrics are recorded only after the pinned Rust workflow passes.
+
+### Next increment
+
+Integrate `PreparedCommit` into a dedicated runtime mutation-application port with revision-guarded
+promotion, reducing TD-005 without introducing Android or JNI concerns into the core.

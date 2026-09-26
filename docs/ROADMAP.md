@@ -24,6 +24,7 @@
 - [x] Implement and benchmark deterministic single-child keyed movement in Rust.
 - [x] Implement and benchmark deterministic single-child keyed insertion in Rust.
 - [x] Implement and benchmark deterministic single-child keyed removal in Rust.
+- [x] Implement and benchmark deterministic single-child keyed replacement in Rust.
 - [x] Specify commit application, promotion and full-remount recovery semantics.
 - [x] Add deterministic generated tests for commit-state safety invariants.
 - [x] Exhaustively explore bounded commit-state transitions and recovery boundaries.

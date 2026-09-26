@@ -1,6 +1,6 @@
 # ADR-0003: Reconciliation crate boundary and public type contract
 
-- Status: Accepted; initial mount, stable properties, single keyed moves, insertions and removals implemented; broader structural updates pending
+- Status: Accepted; initial mount, stable properties and single keyed structural changes implemented; broader updates pending
 - Date: 2026-09-20
 - Depends on: ADR-0001 and ADR-0002
 
@@ -13,7 +13,7 @@ domain. The executable v1 fixtures now provide enough evidence to freeze a small
 
 This decision defines the implementation target. The crate now supports initial mounting and
 property reconciliation while preserving identities for structurally stable keyed or positional
-nodes, plus one keyed move, insertion or removal per sibling list. Other structural changes are rejected
+nodes, plus one keyed move, insertion, removal or replacement per sibling list. Other structural changes are rejected
 explicitly rather than simulated by replacement or full remount.
 
 ## Decision

@@ -20,6 +20,7 @@ const MOUNT_BUDGET: Duration = Duration::from_millis(2);
 const KEYED_MOVE_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_INSERTION_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_REMOVAL_BUDGET: Duration = Duration::from_millis(5);
+const KEYED_REPLACEMENT_BUDGET: Duration = Duration::from_millis(5);
 const FRAME_BYTES_BUDGET: usize = 2 * 1024 * 1024;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -82,6 +83,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let keyed_removal_average = keyed_removal_started.elapsed() / ITERATIONS;
 
+    let replacement_base = build_keyed_replacement_tree(NODE_COUNT, false)?;
+    let replacement_snapshot = reconciler
+        .prepare(&SurfaceSnapshot::empty(), &replacement_base)?
+        .into_snapshot();
+    let replaced_candidate = build_keyed_replacement_tree(NODE_COUNT, true)?;
+    let keyed_replacement_started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared = reconciler.prepare(
+            black_box(&replacement_snapshot),
+            black_box(&replaced_candidate),
+        )?;
+        black_box(prepared);
+    }
+    let keyed_replacement_average = keyed_replacement_started.elapsed() / ITERATIONS;
+
     println!("nodes={NODE_COUNT}");
     println!("iterations={ITERATIONS}");
     println!("validation_average_ns={}", validation_average.as_nanos());
@@ -94,6 +110,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!(
         "keyed_removal_average_ns={}",
         keyed_removal_average.as_nanos()
+    );
+    println!(
+        "keyed_replacement_average_ns={}",
+        keyed_replacement_average.as_nanos()
     );
     println!("frame_bytes={frame_bytes}");
 
@@ -110,6 +130,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         keyed_removal_average,
         KEYED_REMOVAL_BUDGET,
     )?;
+    enforce_budget(
+        "keyed replacement average",
+        keyed_replacement_average,
+        KEYED_REPLACEMENT_BUDGET,
+    )?;
     if frame_bytes > FRAME_BYTES_BUDGET {
         return Err(Box::new(BudgetExceeded::Bytes {
             actual: frame_bytes,
@@ -119,6 +144,30 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("budget_status=passed");
     Ok(())
+}
+
+fn build_keyed_replacement_tree(
+    child_count: usize,
+    replace_middle_child: bool,
+) -> Result<ValidatedTree, Box<dyn Error>> {
+    let replacement_index = child_count / 2;
+    let children = (0..child_count)
+        .map(|index| {
+            let kind = if replace_middle_child && index == replacement_index {
+                ComponentKind::View
+            } else {
+                ComponentKind::Text
+            };
+            DeclarativeNode::new(
+                kind,
+                Some(Key::new(index.to_string())),
+                PropertySet::empty(),
+                vec![],
+            )
+        })
+        .collect();
+    let root = DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), children);
+    Ok(ValidatedTree::new(root, CandidateLimits::default())?)
 }
 
 fn build_keyed_removal_tree(
