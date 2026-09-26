@@ -33,12 +33,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         vec![],
     );
     let candidate = ValidatedTree::new(
-        DeclarativeNode::new(
-            ComponentKind::View,
-            None,
-            PropertySet::empty(),
-            vec![text],
-        ),
+        DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), vec![text]),
         CandidateLimits::default(),
     )?;
     let reconciler = Reconciler::new(ReconcileLimits::new(16)?);
