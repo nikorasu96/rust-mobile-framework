@@ -1,3 +1,5 @@
+#![doc = "Executable composition-root contract for the headless example."]
+
 use std::process::Command;
 
 #[test]
