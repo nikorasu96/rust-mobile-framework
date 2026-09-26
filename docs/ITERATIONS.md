@@ -1722,8 +1722,22 @@ remove the caller-identified bootstrap tree only after its legacy coverage is re
 
 ### Validation evidence
 
-Pending repository CI for Rust formatting, strict Clippy, 58 workspace tests, rustdoc,
-architecture boundaries, 85 independent specification tests and release performance budgets.
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 58 workspace tests, including the executable composition-root contract |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | Example composes only public inward-facing APIs |
+| Independent regressions | Passed | Architecture check and all 85 Python specification tests |
+| Release performance gate | Passed | Existing reconciliation, commit and frame budgets |
+
+[GitHub Actions run 36265097776](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36265097776)
+measured 107,988 ns average commit promotion, 103,203 ns keyed replacement, 104,071 ns
+removal, 103,960 ns insertion, 112,976 ns movement, 84,327 ns validation, 152,952 ns legacy
+mount and a 1,007,899-byte frame. Every provisional budget passed. The new example has executable
+correctness evidence but no dedicated latency budget; the benchmark still measures the legacy
+mount until the next migration. Python remains independent verification and contains no runtime
+code.
 
 ### Next increment
 
