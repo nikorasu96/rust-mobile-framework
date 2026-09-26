@@ -1,6 +1,6 @@
 # ADR-0003: Reconciliation crate boundary and public type contract
 
-- Status: Accepted; initial mount and stable-tree property updates implemented, structural updates pending
+- Status: Accepted; initial mount, stable properties and single keyed moves implemented; broader structural updates pending
 - Date: 2026-09-20
 - Depends on: ADR-0001 and ADR-0002
 

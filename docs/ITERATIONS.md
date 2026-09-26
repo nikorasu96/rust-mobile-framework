@@ -1413,3 +1413,42 @@ implementation was added.
 
 Select and benchmark a non-quadratic child-order strategy, then implement structural insert,
 remove, replacement and keyed reorder with their reviewed Rust contracts.
+
+## 2026-09-21 — Bounded keyed child movement in Rust
+
+### Acceptance criteria
+
+- Detect one keyed child relocation per sibling list with linear work and deterministic output.
+- Preserve every matching runtime identity and emit exactly one checked `MoveChild` mutation.
+- Reject multi-move permutations atomically until a general order-maintenance strategy is measured.
+- Add a representative 1,000-sibling release budget to the compiled performance gate.
+
+### Delivered
+
+- Added production Rust reconciliation for one child moving earlier or later among keyed siblings.
+- Added a candidate-to-previous index mapping that rebuilds immutable snapshots in candidate order.
+- Kept insertions, removals, replacements and multi-move permutations behind the typed structural
+  rejection boundary.
+- Added Rust contracts for both movement directions, identity preservation and atomic rejection.
+- Extended the release harness with a 1,000-sibling keyed-move workload.
+
+### Validation evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 34 tests, including ten reconciliation public contract tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | `rmf-reconciliation` still depends only on local `rmf-core` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 keyed siblings × 100 preparations plus existing budgets |
+
+[GitHub Actions run 35636898110](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/35636898110)
+measured 82,650 ns average keyed movement, 66,863 ns validation, 124,257 ns mount and a
+1,007,899-byte frame. The keyed workload exercises a last-to-first move across 1,000 siblings and
+remains below its provisional 5 ms budget. No new Python implementation was added.
+
+### Next increment
+
+Implement keyed insertion and removal with deterministic detach/delete ordering, preserving the
+single-move linear path and adding dedicated mutation benchmarks.

@@ -5,7 +5,11 @@ use std::fmt::{self, Display, Formatter};
 use std::hint::black_box;
 use std::time::{Duration, Instant};
 
+use rmf_core::candidate::{
+    CandidateLimits, ComponentKind, DeclarativeNode, Key, PropertySet, ValidatedTree,
+};
 use rmf_core::{Element, NodeId, UiNode, UiTree};
+use rmf_reconciliation::{ReconcileLimits, Reconciler, SurfaceSnapshot};
 use rmf_renderer_headless::HeadlessRenderer;
 use rmf_runtime::Runtime;
 
@@ -13,6 +17,7 @@ const NODE_COUNT: usize = 1_000;
 const ITERATIONS: u32 = 100;
 const VALIDATION_BUDGET: Duration = Duration::from_millis(1);
 const MOUNT_BUDGET: Duration = Duration::from_millis(2);
+const KEYED_MOVE_BUDGET: Duration = Duration::from_millis(5);
 const FRAME_BYTES_BUDGET: usize = 2 * 1024 * 1024;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -34,14 +39,29 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mount_average = mount_started.elapsed() / ITERATIONS;
     let frame_bytes = runtime.renderer().last_frame().map_or(0, str::len);
 
+    let reconciler = Reconciler::new(ReconcileLimits::new(3_000)?);
+    let initial_candidate = build_keyed_sibling_tree(NODE_COUNT, false)?;
+    let snapshot = reconciler
+        .prepare(&SurfaceSnapshot::empty(), &initial_candidate)?
+        .into_snapshot();
+    let moved_candidate = build_keyed_sibling_tree(NODE_COUNT, true)?;
+    let keyed_move_started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared = reconciler.prepare(black_box(&snapshot), black_box(&moved_candidate))?;
+        black_box(prepared);
+    }
+    let keyed_move_average = keyed_move_started.elapsed() / ITERATIONS;
+
     println!("nodes={NODE_COUNT}");
     println!("iterations={ITERATIONS}");
     println!("validation_average_ns={}", validation_average.as_nanos());
     println!("mount_average_ns={}", mount_average.as_nanos());
+    println!("keyed_move_average_ns={}", keyed_move_average.as_nanos());
     println!("frame_bytes={frame_bytes}");
 
     enforce_budget("validation average", validation_average, VALIDATION_BUDGET)?;
     enforce_budget("mount average", mount_average, MOUNT_BUDGET)?;
+    enforce_budget("keyed move average", keyed_move_average, KEYED_MOVE_BUDGET)?;
     if frame_bytes > FRAME_BYTES_BUDGET {
         return Err(Box::new(BudgetExceeded::Bytes {
             actual: frame_bytes,
@@ -51,6 +71,31 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("budget_status=passed");
     Ok(())
+}
+
+fn build_keyed_sibling_tree(
+    child_count: usize,
+    move_last_to_front: bool,
+) -> Result<ValidatedTree, Box<dyn Error>> {
+    let mut keys: Vec<usize> = (0..child_count).collect();
+    if move_last_to_front {
+        if let Some(last) = keys.pop() {
+            keys.insert(0, last);
+        }
+    }
+    let children = keys
+        .into_iter()
+        .map(|index| {
+            DeclarativeNode::new(
+                ComponentKind::Text,
+                Some(Key::new(index.to_string())),
+                PropertySet::empty(),
+                vec![],
+            )
+        })
+        .collect();
+    let root = DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), children);
+    Ok(ValidatedTree::new(root, CandidateLimits::default())?)
 }
 
 fn build_linear_tree(node_count: usize) -> Result<UiNode, Box<dyn Error>> {

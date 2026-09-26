@@ -6,7 +6,7 @@
 | TD-003 | Medium | Full-tree rendering allocates a diagnostic string recursively | Capture a compiled baseline and use profiles before choosing reconciliation or allocation changes |
 | TD-004 | Medium | Bootstrap benchmark reports averages only and has no hardware baseline | Add warmup, percentiles and recorded release baseline when Rust execution is available |
 | TD-005 | High | Reconciliation owns `NodeId` for initial and stable-tree updates, but the bootstrap runtime still accepts caller-assigned IDs | Add structural reconciliation, integrate `PreparedCommit` into runtime, then remove the bootstrap tree before Android work |
-| TD-006 | Medium | Reference mutation ordering uses list index/insert operations for wide reorders | Select and benchmark an order-maintenance strategy before the production Rust reconciler is accepted |
+| TD-006 | Medium | Production handles one keyed move linearly; general wide reorders still need order maintenance | Select and benchmark a non-quadratic multi-move strategy before general reorder support |
 
 Critical debt: none. High debt blocks the Android implementation until the
 declarative/committed split is complete. Rust build claims require successful repository CI

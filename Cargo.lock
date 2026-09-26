@@ -16,6 +16,7 @@ name = "rmf-bench"
 version = "0.1.0-alpha.1"
 dependencies = [
  "rmf-core",
+ "rmf-reconciliation",
  "rmf-renderer-headless",
  "rmf-runtime",
 ]

@@ -4,10 +4,11 @@ Pure core service that assigns runtime node identities and prepares immutable sn
 deterministic host mutation batches. Its only dependency is `rmf-core`; it contains no renderer,
 runtime orchestration, Android, JNI or TypeScript concerns.
 
-The current implementation supports initial mounting and property-only updates when component
-kind, key, sibling position and child count remain stable. Structural insertion, removal,
-replacement and reorder are rejected with a typed error until their mutation-ordering strategy is
-implemented and benchmarked.
+The current implementation supports initial mounting, property updates and one keyed child move
+per sibling list. Single moves are detected with bounded linear scans and preserve all matching
+runtime identities. Structural insertion, removal, replacement and reorders requiring multiple
+moves are rejected with a typed error until their mutation-ordering strategy is implemented and
+benchmarked.
 
 Ownership rules:
 
