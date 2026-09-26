@@ -20,6 +20,11 @@ promoting the failed candidate.
 Adapters implement those ports. Composition roots select
 concrete adapters and are the only place allowed to wire them.
 
+`HeadlessMutationAdapter` is the first compiled adapter for both runtime ports. It evaluates a
+complete batch against a private in-memory host copy, validates reachability and ownership, and
+publishes only a valid result. Because no observable mutation precedes validation, adapter errors
+are safe pre-mutation rejections. Remount reconstructs the exact confirmed snapshot.
+
 ## Boundary rules
 
 1. Core crates cannot depend on Android, Kotlin, JNI, TypeScript, renderers, or CLI code.
@@ -118,6 +123,7 @@ a live surface; failed or closed hosts retain neither. The surface transition mo
 from fixture I/O so every contract consumes one authoritative implementation.
 
 The bootstrap `Renderer` path still renders a complete caller-identified tree and is retained
-only for the headless example. New platform work consumes mutation batches and confirmed-snapshot
-remounts through the runtime coordinator; Android adapters do not calculate tree identity or diff
-semantics. Removing the bootstrap path remains an explicit gate before Android integration.
+only for the existing headless example. The separate headless mutation adapter now proves batch
+application and confirmed-snapshot remount without depending on that path. New platform work uses
+the runtime ports; Android adapters do not calculate tree identity or diff semantics. Migrating
+the example and removing the bootstrap path remain explicit gates before Android integration.
