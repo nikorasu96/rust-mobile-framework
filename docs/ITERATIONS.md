@@ -1558,7 +1558,19 @@ preserving identity across kind or key changes, and verify the combined operatio
 
 ### Validation evidence
 
-CI evidence and measured release metrics are recorded only after the pinned Rust workflow passes.
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 47 tests, including twenty-three reconciliation public contract tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | `rmf-reconciliation` still depends only on local `rmf-core` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 keyed siblings × 100 replacement preparations plus existing budgets |
+
+[GitHub Actions run 36240572080](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36240572080)
+measured 73,608 ns average keyed replacement, 67,589 ns removal, 69,919 ns insertion, 80,657 ns
+movement, 60,085 ns validation, 108,790 ns mount and a 1,007,899-byte frame. Every provisional
+budget passed. Python remains independent verification and contains no new runtime implementation.
 
 ### Next increment
 
