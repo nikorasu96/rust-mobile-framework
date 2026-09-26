@@ -127,10 +127,7 @@ fn rejects_unkeyed_replacement_atomically() {
         .into_snapshot();
 
     assert_eq!(
-        reconciler().prepare(
-            &current,
-            &unkeyed_tree(ComponentKind::View, properties),
-        ),
+        reconciler().prepare(&current, &unkeyed_tree(ComponentKind::View, properties),),
         Err(ReconcileError::StructuralChangeUnsupported)
     );
     assert_eq!(current.revision().get(), 1);
