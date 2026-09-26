@@ -10,5 +10,8 @@ publish = false
 [dependencies]
 rmf-reconciliation = { path = "../rmf-reconciliation" }
 
+[dev-dependencies]
+rmf-core = { path = "../rmf-core" }
+
 [lints]
 workspace = true

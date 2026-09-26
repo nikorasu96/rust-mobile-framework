@@ -46,7 +46,8 @@ would preserve caller-controlled runtime identity and allow bypassing the commit
 ## Consequences
 
 - Core exposes one declarative model and no caller-owned runtime identity.
-- Runtime no longer depends on `rmf-core` merely to support obsolete full-tree mounting.
+- Runtime production no longer depends on `rmf-core` merely to support obsolete full-tree
+  mounting; commit integration tests retain an inward-only development dependency.
 - Every host adapter shares revision, recovery and snapshot-promotion semantics.
 - Downstream pre-alpha users must migrate composition roots before upgrading.
 - This decision does not imply React Native source or behavioral compatibility.
