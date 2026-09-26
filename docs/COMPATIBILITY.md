@@ -7,9 +7,10 @@ This file records observed capability, not branding or claimed drop-in compatibi
 | Declarative tree model | Experimental | `rmf-core` tests | Only `View` and `Text` |
 | Declarative candidate validation | Rust implementation | `rmf-core::candidate`, typed schema and defensive-limit tests | No TypeScript facade or runtime integration |
 | Initial tree reconciliation | Rust implementation | `rmf-reconciliation` initial-mount contract tests | No runtime host application |
-| Stable-tree property updates | Rust implementation | identity-preservation, set/remove and atomic-rejection Rust tests | No remove or replace |
+| Stable-tree property updates | Rust implementation | identity-preservation, set/remove and atomic-rejection Rust tests | No replacement |
 | Keyed child reorder | Partial Rust implementation | single-move identity, direction and atomic multi-move rejection tests | One move per sibling list; no general reorder |
 | Keyed child insertion | Partial Rust implementation | middle/append identity and atomic-limit Rust tests | One keyed insertion per sibling list; no unkeyed or multiple insertion |
+| Keyed child removal | Partial Rust implementation | identity, subtree ordering and atomic-limit Rust tests | One keyed removal per sibling list; no unkeyed or multiple removal |
 | Runtime mount port | Experimental | `rmf-runtime` contract test | Full-tree mount only |
 | Commit application and recovery | Executable contract | ADR-0004, eight reviewed fixtures, 800 generated actions and 567 exhaustive transitions | No compiled mutation host port or unbounded proof |
 | Surface lifecycle | Rust implementation | `Runtime` lifecycle API, `rmf-runtime::surface`, Rust unit/integration tests, ADR-0005, six fixtures, 800 generated actions and 1,008 exhaustive transitions | No Android adapter, concurrent executor stress or unbounded proof |
@@ -22,7 +23,7 @@ This file records observed capability, not branding or claimed drop-in compatibi
 | Deterministic headless output | Experimental | adapter regression tests | Not visual rendering |
 | Android rendering | Not started | — | No JNI/Kotlin layer |
 | TypeScript/React API | Not started | — | No JS engine or bindings |
-| Reconciliation | Partial Rust implementation | ADR-0002, compiled initial/property/move/insertion contracts, thirty-one v1 fixtures and 200 generated transitions | No removal, replacement, general reorder or runtime host application |
+| Reconciliation | Partial Rust implementation | ADR-0002, compiled initial/property/move/insertion/removal contracts, thirty-one v1 fixtures and 200 generated transitions | No replacement, general reorder or runtime host application |
 | Typed properties | Executable contract | Versioned `View`/`Text` schema plus contract fixtures | Bootstrap Rust tree has no property set |
 | Layout and styling | Not started | — | No layout engine |
 | Events and accessibility | Contract seed | Typed `CLICK` FFI body with node identity and sequence | No listener, native dispatch, accessibility semantics or state integration |

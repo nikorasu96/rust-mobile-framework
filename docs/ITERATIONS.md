@@ -1494,3 +1494,32 @@ independent verification and contains no new runtime implementation.
 
 Implement one keyed removal with deterministic `RemoveChild` followed by descendant-first `Delete`
 ordering, then benchmark the same 1,000-sibling workload without weakening existing paths.
+
+## 2026-09-26 — Deterministic keyed subtree removal in Rust
+
+### Acceptance criteria
+
+- Detect exactly one keyed removal per sibling list with bounded linear work.
+- Preserve every surviving sibling identity and leave the monotonic allocator unchanged.
+- Emit `RemoveChild` before deletion, detach every nested edge and delete descendants first.
+- Reject unkeyed ambiguity, multiple removals and operation-limit failures atomically.
+- Add a 1,000-sibling release benchmark with an explicit 5 ms provisional budget.
+
+### Delivered
+
+- Added production Rust reconciliation for one keyed removal at any sibling position.
+- Added recursive subtree cleanup that detaches children in reverse index order before deleting
+  descendants and finally their ancestor.
+- Rebuilt the immutable snapshot from surviving candidates while retaining their `NodeId` values.
+- Added Rust contracts for identity preservation, nested operation order, ambiguity and atomicity.
+- Extended the release harness with 100 preparations of a middle removal among 1,000 siblings.
+- Kept replacement, multiple structural changes and general reorder behind typed rejection.
+
+### Validation evidence
+
+CI evidence and measured release metrics are recorded only after the pinned Rust workflow passes.
+
+### Next increment
+
+Implement deterministic keyed replacement as removal plus fresh subtree creation, without
+preserving identity across kind or key changes, and verify the combined operation ordering.

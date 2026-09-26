@@ -23,6 +23,7 @@ cargo run --release -p rmf-bench
 | Headless mount average, 1,000 nodes | <= 2 ms | Host release build |
 | One keyed move, 1,000 siblings | <= 5 ms | Pure reconciliation, host release build |
 | One keyed insertion, 1,000 final siblings | <= 5 ms | Pure reconciliation, host release build |
+| One keyed removal, 1,000 initial siblings | <= 5 ms | Pure reconciliation, host release build |
 | Serialized headless frame | <= 2 MiB | Functional allocation guard |
 
 These are engineering guardrails, not Android product SLOs. Baseline hardware, warmup,
@@ -35,9 +36,9 @@ kept only for this dependency-free bootstrap and must not be presented as tail l
 The language-independent oracle builds one key-to-index table per sibling list and uses
 one expected constant-time lookup for each keyed candidate. A deterministic regression
 reverses 2,048 keyed siblings and verifies that every existing identity is selected once.
-Production Rust gates exercise one last-to-first keyed movement and one middle keyed insertion
-across 1,000 siblings for 100 preparations each. These averages guard against accidental
-quadratic work; they are not tail-latency claims and do not cover general reorder or removal.
+Production Rust gates exercise one last-to-first keyed movement, one middle keyed insertion and one
+middle keyed removal across 1,000 siblings for 100 preparations each. These averages guard against
+accidental quadratic work; they are not tail-latency claims and do not cover general reorder.
 
 ## Rules
 
