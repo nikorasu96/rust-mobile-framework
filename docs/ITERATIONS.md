@@ -1683,12 +1683,19 @@ application and confirmed-snapshot remount, then remove the obsolete full-tree r
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| Rust formatting and linting | Pending CI | Rust 1.85.0 fmt and strict Clippy with all targets/features |
-| Rust tests | Pending CI | Workspace tests including three headless mutation contracts |
-| Rust documentation | Pending CI | Workspace rustdoc with `-D warnings` |
-| Dependency architecture | Pending | Adapter depends inward on core, reconciliation and runtime |
-| Independent regressions | Pending | Architecture check and Python specification tests |
-| Release performance gate | Pending CI | Existing reconciliation, commit and frame budgets |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 57 workspace tests, including three headless mutation contracts |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | Adapter depends inward on core, reconciliation and runtime |
+| Independent regressions | Passed | Architecture check and all 85 Python specification tests |
+| Release performance gate | Passed | Existing reconciliation, commit and frame budgets |
+
+[GitHub Actions run 36250858873](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36250858873)
+measured 63,186 ns average commit promotion, 59,160 ns keyed replacement, 59,470 ns removal,
+58,390 ns insertion, 67,021 ns movement, 44,875 ns validation, 89,714 ns legacy mount and a
+1,007,899-byte frame. Every provisional budget passed. The new atomic headless application path
+has correctness evidence but no dedicated latency budget yet; that measurement belongs with the
+composition-root migration. Python remains independent verification and contains no runtime code.
 
 ### Next increment
 
