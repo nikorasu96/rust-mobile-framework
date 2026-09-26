@@ -2,8 +2,8 @@
 
 use std::cell::Cell;
 
-use rmf_runtime::surface::{CreateSurfaceError, SurfaceId};
 use rmf_runtime::Runtime;
+use rmf_runtime::surface::{CreateSurfaceError, SurfaceId};
 
 fn surface_id(value: u64) -> SurfaceId {
     match SurfaceId::new(value) {
