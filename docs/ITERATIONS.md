@@ -1658,3 +1658,46 @@ verification and contains no runtime implementation.
 
 Migrate the headless adapter from caller-assigned bootstrap identities to mutation-batch
 application and confirmed-snapshot remount, then remove the obsolete full-tree renderer path.
+
+## 2026-09-26 — Atomic headless mutation and remount adapter in Rust
+
+### Acceptance criteria
+
+- Implement both runtime host ports in a platform-independent headless adapter.
+- Apply every v1 mutation family atomically and reject stale batches before observable mutation.
+- Validate root reachability, single ownership, child positions and safe deletion.
+- Reconstruct exact host state from the last confirmed immutable snapshot.
+- Keep the legacy example isolated until its composition-root migration has equivalent evidence.
+
+### Delivered
+
+- Added production Rust `HeadlessMutationAdapter` with a private host graph and typed errors.
+- Applied batches to a cloned state and published only after full graph validation.
+- Added exact snapshot agreement checks covering kinds, properties, ordering and ownership.
+- Implemented infallible remount from the already validated `SurfaceSnapshot` contract.
+- Added Rust contracts spanning create, property update, move, insert, remove, delete, replacement,
+  stale rejection and remount.
+- Corrected local workspace dependency entries in `Cargo.lock` while adding the adapter dependency.
+
+### Validation evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 57 workspace tests, including three headless mutation contracts |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | Adapter depends inward on core, reconciliation and runtime |
+| Independent regressions | Passed | Architecture check and all 85 Python specification tests |
+| Release performance gate | Passed | Existing reconciliation, commit and frame budgets |
+
+[GitHub Actions run 36250858873](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36250858873)
+measured 63,186 ns average commit promotion, 59,160 ns keyed replacement, 59,470 ns removal,
+58,390 ns insertion, 67,021 ns movement, 44,875 ns validation, 89,714 ns legacy mount and a
+1,007,899-byte frame. Every provisional budget passed. The new atomic headless application path
+has correctness evidence but no dedicated latency budget yet; that measurement belongs with the
+composition-root migration. Python remains independent verification and contains no runtime code.
+
+### Next increment
+
+Migrate `hello-headless` to declarative candidates, reconciliation and `CommitCoordinator`, then
+remove the caller-identified bootstrap tree only after its legacy coverage is replaced.
