@@ -22,6 +22,7 @@
 - [x] Implement deterministic initial-mount reconciliation and immutable snapshots in Rust.
 - [x] Preserve identities and reconcile properties on structurally stable trees.
 - [x] Implement and benchmark deterministic single-child keyed movement in Rust.
+- [x] Implement and benchmark deterministic single-child keyed insertion in Rust.
 - [x] Specify commit application, promotion and full-remount recovery semantics.
 - [x] Add deterministic generated tests for commit-state safety invariants.
 - [x] Exhaustively explore bounded commit-state transitions and recovery boundaries.
