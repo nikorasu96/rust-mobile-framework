@@ -83,7 +83,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let keyed_removal_average = keyed_removal_started.elapsed() / ITERATIONS;
 
-    let keyed_replacement_average = measure_keyed_replacement(&reconciler)?;
+    let keyed_replacement_average = measure_keyed_replacement(reconciler)?;
 
     println!("nodes={NODE_COUNT}");
     println!("iterations={ITERATIONS}");
@@ -133,7 +133,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn measure_keyed_replacement(reconciler: &Reconciler) -> Result<Duration, Box<dyn Error>> {
+fn measure_keyed_replacement(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {
     let base = build_keyed_replacement_tree(NODE_COUNT, false)?;
     let snapshot = reconciler
         .prepare(&SurfaceSnapshot::empty(), &base)?
