@@ -1,6 +1,6 @@
 # ADR-0004: Commit application and surface recovery
 
-- Status: Accepted contract; Rust implementation blocked by TD-001 and TD-005
+- Status: Accepted; apply-then-promote implemented in Rust; full-remount recovery pending
 - Date: 2026-09-20
 - Depends on: ADR-0002 and ADR-0003
 
@@ -119,6 +119,13 @@ Python model is a dependency-free specification aid, not production runtime code
 - Full remount has a single authoritative source: the last confirmed snapshot.
 - Android must implement both small ports and accurate failure-phase classification.
 - Asynchronous application, cancellation and surface disposal remain explicitly deferred.
+
+## Implementation status
+
+`rmf-runtime::commit` implements `BatchApplier`, explicit failure-phase classification,
+revision-guarded application, success-only snapshot promotion, safe-rejection rollback to ready
+and fail-closed blocking after a possibly partial mutation. `SnapshotRemounter` and the recovery
+transition remain the next bounded increment; no compiled code currently claims host recovery.
 
 ## References
 

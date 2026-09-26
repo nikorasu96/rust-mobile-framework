@@ -1576,3 +1576,44 @@ budget passed. Python remains independent verification and contains no new runti
 
 Integrate `PreparedCommit` into a dedicated runtime mutation-application port with revision-guarded
 promotion, reducing TD-005 without introducing Android or JNI concerns into the core.
+
+## 2026-09-26 — Revision-guarded commit application in Rust
+
+### Acceptance criteria
+
+- Add a capability-specific host batch port with explicit pre-mutation and partial-failure classes.
+- Reject a stale prepared batch before invoking the host adapter.
+- Publish the prepared snapshot only after complete host success.
+- Keep safe rejection ready at the confirmed revision and block commits after partial mutation.
+- Measure 100 unchanged 1,000-sibling prepare-and-promote cycles under a 1 ms provisional budget.
+
+### Delivered
+
+- Added production Rust `BatchApplier`, `ApplyFailure`, `CommitStatus` and `CommitCoordinator`.
+- Made the coordinator own the last confirmed immutable snapshot and transient applying state.
+- Added typed stale, safe rejection, partial failure and recovery-required outcomes.
+- Added Rust contracts for promotion, stale rejection, safe rejection and fail-closed blocking.
+- Added the inward `rmf-runtime -> rmf-reconciliation` dependency required by ADR-0003.
+- Kept full-remount recovery and legacy bootstrap removal explicit rather than claiming completion.
+
+### Validation evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 51 tests, including four runtime commit-application contracts |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | Runtime depends inward on reconciliation; no cycle or adapter dependency |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 100 unchanged 1,000-sibling prepare-and-promote cycles plus existing budgets |
+
+[GitHub Actions run 36244269227](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36244269227)
+measured 106,756 ns average commit promotion, 102,267 ns keyed replacement, 102,590 ns
+removal, 101,637 ns insertion, 112,060 ns movement, 82,239 ns validation, 150,221 ns mount
+and a 1,007,899-byte frame. Every provisional budget passed. Python remains independent
+verification and contains no new runtime implementation.
+
+### Next increment
+
+Implement `SnapshotRemounter` recovery of the last confirmed snapshot, including retry after
+remount failure, before adapting the headless renderer to mutation batches.

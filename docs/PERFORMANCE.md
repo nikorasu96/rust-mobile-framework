@@ -25,6 +25,7 @@ cargo run --release -p rmf-bench
 | One keyed insertion, 1,000 final siblings | <= 5 ms | Pure reconciliation, host release build |
 | One keyed removal, 1,000 initial siblings | <= 5 ms | Pure reconciliation, host release build |
 | One keyed replacement, 1,000 siblings | <= 5 ms | Pure reconciliation, host release build |
+| Prepare and promote unchanged 1,000-sibling commit | <= 1 ms | Reconciliation plus no-op runtime port, host release build |
 | Serialized headless frame | <= 2 MiB | Functional allocation guard |
 
 These are engineering guardrails, not Android product SLOs. Baseline hardware, warmup,
@@ -38,7 +39,9 @@ The language-independent oracle builds one key-to-index table per sibling list a
 one expected constant-time lookup for each keyed candidate. A deterministic regression
 reverses 2,048 keyed siblings and verifies that every existing identity is selected once.
 Production Rust gates exercise one last-to-first keyed movement and one middle keyed insertion,
-removal and replacement across 1,000 siblings for 100 preparations each. These averages guard
+removal and replacement across 1,000 siblings for 100 preparations each. The runtime gate also
+prepares and promotes 100 unchanged commits through a no-op batch adapter after initial mount.
+These averages guard
 against accidental quadratic work; they are not tail-latency claims or general reorder evidence.
 
 ## Rules
