@@ -1517,7 +1517,19 @@ ordering, then benchmark the same 1,000-sibling workload without weakening exist
 
 ### Validation evidence
 
-CI evidence and measured release metrics are recorded only after the pinned Rust workflow passes.
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 42 tests, including eighteen reconciliation public contract tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | `rmf-reconciliation` still depends only on local `rmf-core` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 keyed siblings × 100 removal preparations plus existing budgets |
+
+[GitHub Actions run 36228602297](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36228602297)
+measured 100,621 ns average keyed removal, 99,215 ns insertion, 109,634 ns movement,
+82,846 ns validation, 152,133 ns mount and a 1,007,899-byte frame. Every provisional budget
+passed. Python remains independent verification and contains no new runtime implementation.
 
 ### Next increment
 
