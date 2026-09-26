@@ -1743,3 +1743,31 @@ code.
 
 Migrate the legacy headless benchmark and renderer contracts to committed snapshots, then remove
 the caller-identified bootstrap API in one separately validated change.
+
+## 2026-09-26 — Confirmed headless commit performance gate in Rust
+
+### Acceptance criteria
+
+- Remove caller-assigned node identities and the legacy renderer from the release benchmark.
+- Measure initial reconciliation, atomic batch application and confirmed snapshot promotion.
+- Expose allocation-free logical host metrics without leaking adapter graph internals.
+- Fail the benchmark when the published host omits nodes or parent-child edges.
+- Preserve existing reconciliation and commit-promotion budgets.
+
+### Delivered
+
+- Replaced legacy `UiTree` validation/mount timing with declarative validation and committed mount.
+- Benchmarked the real `HeadlessMutationAdapter` behind `CommitCoordinator` for 1,001 nodes.
+- Added typed `HeadlessHostMetrics` for revision, nodes, edges and properties.
+- Extended the headless adapter contract with exact logical metric assertions.
+- Narrowed TD-005 to legacy renderer/runtime tests and the obsolete mount API.
+
+### Validation evidence
+
+Pending repository CI for Rust formatting, strict Clippy, 58 workspace tests, rustdoc,
+architecture boundaries, 85 independent specification tests and the migrated performance gate.
+
+### Next increment
+
+Replace the remaining legacy renderer and runtime mount contracts with committed-path contracts,
+then remove the caller-identified bootstrap API with an explicit migration note.

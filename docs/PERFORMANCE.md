@@ -5,9 +5,10 @@ Debug-build numbers and unlabelled wall-clock results are not accepted as eviden
 
 ## Foundation scenario
 
-`rmf-bench` constructs a deterministic linear tree containing 1,000 nodes. It measures
-100 iterations of complete structural validation and 100 mounts through the headless
-renderer. The executable has no benchmarking or serialization dependency.
+`rmf-bench` constructs a deterministic declarative tree containing 1,000 keyed children. It
+measures 100 complete candidate validations and 100 initial commits through reconciliation,
+`CommitCoordinator` and the atomic headless mutation adapter. The executable has no benchmarking
+or serialization dependency.
 
 Run it with:
 
@@ -19,19 +20,18 @@ cargo run --release -p rmf-bench
 
 | Metric | Initial gate | Scope |
 | --- | ---: | --- |
-| Validation average, 1,000 nodes | <= 1 ms | Host release build |
-| Headless mount average, 1,000 nodes | <= 2 ms | Host release build |
+| Candidate validation average, 1,001 nodes | <= 1 ms | Host release build |
+| Confirmed headless mount average, 1,001 nodes | <= 5 ms | Reconciliation plus atomic host application |
 | One keyed move, 1,000 siblings | <= 5 ms | Pure reconciliation, host release build |
 | One keyed insertion, 1,000 final siblings | <= 5 ms | Pure reconciliation, host release build |
 | One keyed removal, 1,000 initial siblings | <= 5 ms | Pure reconciliation, host release build |
 | One keyed replacement, 1,000 siblings | <= 5 ms | Pure reconciliation, host release build |
 | Prepare and promote unchanged 1,000-sibling commit | <= 1 ms | Reconciliation plus no-op runtime port, host release build |
-| Serialized headless frame | <= 2 MiB | Functional allocation guard |
 
 These are engineering guardrails, not Android product SLOs. Baseline hardware, warmup,
 variance, percentiles, peak RSS, allocation counts, JNI latency, frame timing and binary
-size gates must be established when the corresponding environment exists. Averages are
-kept only for this dependency-free bootstrap and must not be presented as tail latency.
+size gates must be established when the corresponding environment exists. These dependency-free
+averages must not be presented as tail latency.
 
 ## Reconciliation specification
 
@@ -41,6 +41,8 @@ reverses 2,048 keyed siblings and verifies that every existing identity is selec
 Production Rust gates exercise one last-to-first keyed movement and one middle keyed insertion,
 removal and replacement across 1,000 siblings for 100 preparations each. The runtime gate also
 prepares and promotes 100 unchanged commits through a no-op batch adapter after initial mount.
+The committed-mount workload separately validates the real headless host's revision, node and
+edge counts so a fast but incomplete mutation application fails the gate.
 These averages guard
 against accidental quadratic work; they are not tail-latency claims or general reorder evidence.
 

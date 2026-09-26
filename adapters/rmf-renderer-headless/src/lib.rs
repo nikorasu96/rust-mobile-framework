@@ -7,7 +7,7 @@ use std::convert::Infallible;
 use rmf_core::{Element, UiNode, UiTree};
 use rmf_runtime::Renderer;
 
-pub use mutation::{HeadlessApplyError, HeadlessMutationAdapter};
+pub use mutation::{HeadlessApplyError, HeadlessHostMetrics, HeadlessMutationAdapter};
 
 /// Renderer that serializes a tree into a stable, human-readable frame.
 #[derive(Debug, Default)]

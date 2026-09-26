@@ -105,6 +105,11 @@ fn applies_every_v1_mutation_family_and_tracks_the_committed_snapshot() {
     assert_eq!(coordinator.applier().node_count(), 3);
     assert_eq!(coordinator.applier().revision(), 5);
     assert_eq!(coordinator.applier().root_id(), Some(1));
+    let metrics = coordinator.applier().metrics();
+    assert_eq!(metrics.revision(), 5);
+    assert_eq!(metrics.nodes(), 3);
+    assert_eq!(metrics.edges(), 2);
+    assert_eq!(metrics.properties(), 1);
 }
 
 #[test]
