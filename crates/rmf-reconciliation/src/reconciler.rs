@@ -73,7 +73,7 @@ impl Display for ReconcileError {
                 )
             }
             Self::StructuralChangeUnsupported => formatter.write_str(
-                "structural removal, replacement, multiple insertions or multiple-child reorder is not implemented",
+                "structural replacement, multiple insertions or removals, or multiple-child reorder is not implemented",
             ),
             Self::InvariantViolation => formatter.write_str("reconciliation invariant violated"),
         }
@@ -214,6 +214,9 @@ impl CommitBuilder {
         if candidate.len() == previous.len().saturating_add(1) {
             return self.reconcile_single_insertion(previous_parent, candidate_parent);
         }
+        if previous.len() == candidate.len().saturating_add(1) {
+            return self.reconcile_single_removal(previous_parent, candidate_parent);
+        }
         if previous.len() != candidate.len() {
             return Err(ReconcileError::StructuralChangeUnsupported);
         }
@@ -277,6 +280,51 @@ impl CommitBuilder {
         }
 
         Ok(children)
+    }
+
+    fn reconcile_single_removal(
+        &mut self,
+        previous_parent: &CommittedNode,
+        candidate_parent: &DeclarativeNode,
+    ) -> Result<Vec<CommittedNode>, ReconcileError> {
+        let previous = previous_parent.children();
+        let candidate = candidate_parent.children();
+        let removal = detect_single_keyed_removal(previous, candidate)
+            .ok_or(ReconcileError::StructuralChangeUnsupported)?;
+        let removed = &previous[removal];
+
+        self.push(Mutation::RemoveChild {
+            parent_id: previous_parent.node_id(),
+            child_id: removed.node_id(),
+            index: checked_index(removal)?,
+        })?;
+        self.delete_subtree(removed)?;
+
+        let mut children = Vec::with_capacity(candidate.len());
+        for (candidate_index, candidate_child) in candidate.iter().enumerate() {
+            let previous_index = if candidate_index < removal {
+                candidate_index
+            } else {
+                candidate_index + 1
+            };
+            children.push(self.reconcile_node(&previous[previous_index], candidate_child)?);
+        }
+
+        Ok(children)
+    }
+
+    fn delete_subtree(&mut self, node: &CommittedNode) -> Result<(), ReconcileError> {
+        for (index, child) in node.children().iter().enumerate().rev() {
+            self.push(Mutation::RemoveChild {
+                parent_id: node.node_id(),
+                child_id: child.node_id(),
+                index: checked_index(index)?,
+            })?;
+            self.delete_subtree(child)?;
+        }
+        self.push(Mutation::Delete {
+            node_id: node.node_id(),
+        })
     }
 
     fn allocate_identity(&mut self) -> Result<NodeId, ReconcileError> {
@@ -394,6 +442,43 @@ fn detect_single_keyed_insertion(
 
     if previous_index == previous.len() {
         insertion
+    } else {
+        None
+    }
+}
+
+fn detect_single_keyed_removal(
+    previous: &[CommittedNode],
+    candidate: &[DeclarativeNode],
+) -> Option<usize> {
+    if previous.len() != candidate.len().checked_add(1)? {
+        return None;
+    }
+
+    let mut previous_index = 0;
+    let mut candidate_index = 0;
+    let mut removal = None;
+
+    while previous_index < previous.len() {
+        let keys_match = candidate
+            .get(candidate_index)
+            .is_some_and(|candidate_child| {
+                previous[previous_index].key().is_some()
+                    && previous[previous_index].key() == candidate_child.key()
+            });
+        if keys_match {
+            previous_index += 1;
+            candidate_index += 1;
+        } else if removal.is_none() && previous[previous_index].key().is_some() {
+            removal = Some(previous_index);
+            previous_index += 1;
+        } else {
+            return None;
+        }
+    }
+
+    if candidate_index == candidate.len() {
+        removal
     } else {
         None
     }

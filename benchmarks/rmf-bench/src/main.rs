@@ -19,6 +19,7 @@ const VALIDATION_BUDGET: Duration = Duration::from_millis(1);
 const MOUNT_BUDGET: Duration = Duration::from_millis(2);
 const KEYED_MOVE_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_INSERTION_BUDGET: Duration = Duration::from_millis(5);
+const KEYED_REMOVAL_BUDGET: Duration = Duration::from_millis(5);
 const FRAME_BYTES_BUDGET: usize = 2 * 1024 * 1024;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -68,6 +69,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let keyed_insertion_average = keyed_insertion_started.elapsed() / ITERATIONS;
 
+    let removal_base = build_keyed_removal_tree(NODE_COUNT, false)?;
+    let removal_snapshot = reconciler
+        .prepare(&SurfaceSnapshot::empty(), &removal_base)?
+        .into_snapshot();
+    let removed_candidate = build_keyed_removal_tree(NODE_COUNT, true)?;
+    let keyed_removal_started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared =
+            reconciler.prepare(black_box(&removal_snapshot), black_box(&removed_candidate))?;
+        black_box(prepared);
+    }
+    let keyed_removal_average = keyed_removal_started.elapsed() / ITERATIONS;
+
     println!("nodes={NODE_COUNT}");
     println!("iterations={ITERATIONS}");
     println!("validation_average_ns={}", validation_average.as_nanos());
@@ -76,6 +90,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!(
         "keyed_insertion_average_ns={}",
         keyed_insertion_average.as_nanos()
+    );
+    println!(
+        "keyed_removal_average_ns={}",
+        keyed_removal_average.as_nanos()
     );
     println!("frame_bytes={frame_bytes}");
 
@@ -87,6 +105,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         keyed_insertion_average,
         KEYED_INSERTION_BUDGET,
     )?;
+    enforce_budget(
+        "keyed removal average",
+        keyed_removal_average,
+        KEYED_REMOVAL_BUDGET,
+    )?;
     if frame_bytes > FRAME_BYTES_BUDGET {
         return Err(Box::new(BudgetExceeded::Bytes {
             actual: frame_bytes,
@@ -96,6 +119,29 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("budget_status=passed");
     Ok(())
+}
+
+fn build_keyed_removal_tree(
+    initial_child_count: usize,
+    remove_middle_child: bool,
+) -> Result<ValidatedTree, Box<dyn Error>> {
+    let mut keys: Vec<usize> = (0..initial_child_count).collect();
+    if remove_middle_child && !keys.is_empty() {
+        keys.remove(initial_child_count / 2);
+    }
+    let children = keys
+        .into_iter()
+        .map(|index| {
+            DeclarativeNode::new(
+                ComponentKind::Text,
+                Some(Key::new(index.to_string())),
+                PropertySet::empty(),
+                vec![],
+            )
+        })
+        .collect();
+    let root = DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), children);
+    Ok(ValidatedTree::new(root, CandidateLimits::default())?)
 }
 
 fn build_keyed_insertion_tree(

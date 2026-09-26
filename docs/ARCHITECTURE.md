@@ -10,8 +10,8 @@ rmf-core <- rmf-reconciliation <- rmf-runtime <- platform/render adapters <- com
 caller-assigned runtime identities and enforces the closed v1 property schema and defensive
 tree limits. `rmf-reconciliation` owns runtime identities, immutable snapshots and pure mutation
 calculation. It implements deterministic initial mounts, property updates, one linear-time keyed
-child move and one linear-time keyed insertion per sibling list. Removals, replacements, multiple
-insertions and multi-move reorders remain unavailable through an explicit typed error. `rmf-runtime` owns application
+child move, insertion or removal per sibling list. Replacements, multiple structural changes and
+multi-move reorders remain unavailable through an explicit typed error. `rmf-runtime` owns application
 orchestration and outbound ports. Adapters implement those ports. Composition roots select
 concrete adapters and are the only place allowed to wire them.
 
