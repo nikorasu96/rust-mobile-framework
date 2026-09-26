@@ -1640,12 +1640,19 @@ remount failure, before adapting the headless renderer to mutation batches.
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| Rust formatting and linting | Pending CI | Rust 1.85.0 fmt and strict Clippy with all targets/features |
-| Rust tests | Pending CI | Workspace tests including seven runtime commit contracts |
-| Rust documentation | Pending CI | Workspace rustdoc with `-D warnings` |
-| Dependency architecture | Pending | Runtime remains platform-independent and depends only inward |
-| Independent regressions | Pending | Architecture check and Python specification tests |
-| Release performance gate | Pending CI | Existing reconciliation, commit and frame budgets |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 54 workspace tests, including seven runtime commit contracts |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | Runtime remains platform-independent and depends only inward |
+| Independent regressions | Passed | Architecture check and all 85 Python specification tests |
+| Release performance gate | Passed | Existing reconciliation, commit and frame budgets |
+
+[GitHub Actions run 36247253329](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36247253329)
+measured 109,203 ns average commit promotion, 103,600 ns keyed replacement, 105,080 ns
+removal, 105,157 ns insertion, 111,440 ns movement, 83,909 ns validation, 154,951 ns mount
+and a 1,007,899-byte frame. Every provisional budget passed. Recovery itself has no platform
+adapter yet, so this increment makes no remount-latency claim. Python remains independent
+verification and contains no runtime implementation.
 
 ### Next increment
 
