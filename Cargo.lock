@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "hello-headless"
-version = "0.1.0-alpha.1"
+version = "0.2.0-alpha.1"
 dependencies = [
  "rmf-core",
  "rmf-reconciliation",
@@ -14,7 +14,7 @@ dependencies = [
 
 [[package]]
 name = "rmf-bench"
-version = "0.1.0-alpha.1"
+version = "0.2.0-alpha.1"
 dependencies = [
  "rmf-core",
  "rmf-reconciliation",
@@ -24,11 +24,11 @@ dependencies = [
 
 [[package]]
 name = "rmf-core"
-version = "0.1.0-alpha.1"
+version = "0.2.0-alpha.1"
 
 [[package]]
 name = "rmf-renderer-headless"
-version = "0.1.0-alpha.1"
+version = "0.2.0-alpha.1"
 dependencies = [
  "rmf-core",
  "rmf-reconciliation",
@@ -37,15 +37,14 @@ dependencies = [
 
 [[package]]
 name = "rmf-reconciliation"
-version = "0.1.0-alpha.1"
+version = "0.2.0-alpha.1"
 dependencies = [
  "rmf-core",
 ]
 
 [[package]]
 name = "rmf-runtime"
-version = "0.1.0-alpha.1"
+version = "0.2.0-alpha.1"
 dependencies = [
- "rmf-core",
  "rmf-reconciliation",
 ]

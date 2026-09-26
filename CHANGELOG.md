@@ -4,12 +4,14 @@ All notable changes follow semantic versioning once a public API is released.
 
 ## Unreleased
 
+- **Breaking:** bumped the pre-alpha workspace to `0.2.0-alpha.1` and removed the
+  caller-identified `UiTree`, `Renderer`, `Runtime::mount` and `HeadlessRenderer` bootstrap APIs.
+  ADR-0012 contains the source migration table.
 - Migrated `hello-headless` from caller-assigned node IDs to the declarative reconciliation and
   commit-application pipeline.
 - Migrated the release benchmark to confirmed headless commits and added logical host metrics.
 - Added workspace quality policy and pinned Rust toolchain.
 - Added validated platform-independent declarative tree.
-- Added renderer port, runtime mount use case, and deterministic headless adapter.
 - Added architecture ADR, roadmap, compatibility matrix, and debt register.
 - Added an executable architecture-boundary check with four regression tests.
 - Added a dependency-free 1,000-node performance gate and documented provisional budgets.

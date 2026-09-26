@@ -8,7 +8,6 @@ license.workspace = true
 publish = false
 
 [dependencies]
-rmf-core = { path = "../rmf-core" }
 rmf-reconciliation = { path = "../rmf-reconciliation" }
 
 [lints]
