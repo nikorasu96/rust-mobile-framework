@@ -1434,9 +1434,19 @@ remove, replacement and keyed reorder with their reviewed Rust contracts.
 
 ### Validation evidence
 
-Final Rust counts, CI evidence and benchmark measurements will be recorded after the exact branch
-passes formatting, strict Clippy, tests, rustdoc, architecture checks and release budgets. No new
-Python implementation is part of this increment.
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 34 tests, including ten reconciliation public contract tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | `rmf-reconciliation` still depends only on local `rmf-core` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 keyed siblings × 100 preparations plus existing budgets |
+
+[GitHub Actions run 35636898110](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/35636898110)
+measured 82,650 ns average keyed movement, 66,863 ns validation, 124,257 ns mount and a
+1,007,899-byte frame. The keyed workload exercises a last-to-first move across 1,000 siblings and
+remains below its provisional 5 ms budget. No new Python implementation was added.
 
 ### Next increment
 
