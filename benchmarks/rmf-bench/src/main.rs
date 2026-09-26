@@ -70,10 +70,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "candidate_validation_average_ns={}",
         validation_average.as_nanos()
     );
-    println!(
-        "committed_mount_average_ns={}",
-        mount_average.as_nanos()
-    );
+    println!("committed_mount_average_ns={}", mount_average.as_nanos());
     println!("keyed_move_average_ns={}", keyed_move_average.as_nanos());
     println!(
         "keyed_insertion_average_ns={}",
@@ -292,10 +289,7 @@ fn build_keyed_sibling_tree(
     Ok(ValidatedTree::new(root, CandidateLimits::default())?)
 }
 
-fn build_keyed_sibling_root(
-    child_count: usize,
-    move_last_to_front: bool,
-) -> DeclarativeNode {
+fn build_keyed_sibling_root(child_count: usize, move_last_to_front: bool) -> DeclarativeNode {
     let mut keys: Vec<usize> = (0..child_count).collect();
     if move_last_to_front {
         if let Some(last) = keys.pop() {
