@@ -6,9 +6,7 @@ use rmf_core::candidate::{
 };
 use rmf_reconciliation::{ReconcileLimits, Reconciler, SurfaceSnapshot};
 use rmf_renderer_headless::{HeadlessApplyError, HeadlessMutationAdapter};
-use rmf_runtime::commit::{
-    ApplyFailure, BatchApplier, CommitCoordinator, SnapshotRemounter,
-};
+use rmf_runtime::commit::{ApplyFailure, BatchApplier, CommitCoordinator, SnapshotRemounter};
 
 fn property_id(value: u32) -> PropertyId {
     PropertyId::new(value)
@@ -39,12 +37,7 @@ fn view(key: &str) -> DeclarativeNode {
 }
 
 fn candidate(children: Vec<DeclarativeNode>) -> ValidatedTree {
-    let root = DeclarativeNode::new(
-        ComponentKind::View,
-        None,
-        PropertySet::empty(),
-        children,
-    );
+    let root = DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), children);
     ValidatedTree::new(root, CandidateLimits::default())
         .unwrap_or_else(|error| unreachable!("valid adapter fixture: {error}"))
 }
@@ -118,10 +111,7 @@ fn applies_every_v1_mutation_family_and_tracks_the_committed_snapshot() {
 fn stale_batch_is_rejected_without_changing_host_state() {
     let reconciler = reconciler();
     let prepared = reconciler
-        .prepare(
-            &SurfaceSnapshot::empty(),
-            &candidate(vec![text("a", "A")]),
-        )
+        .prepare(&SurfaceSnapshot::empty(), &candidate(vec![text("a", "A")]))
         .unwrap_or_else(|error| unreachable!("fixture preparation succeeds: {error}"));
     let snapshot = prepared.clone().into_snapshot();
     let mut adapter = HeadlessMutationAdapter::default();
