@@ -1743,3 +1743,45 @@ code.
 
 Migrate the legacy headless benchmark and renderer contracts to committed snapshots, then remove
 the caller-identified bootstrap API in one separately validated change.
+
+## 2026-09-26 — Confirmed headless commit performance gate in Rust
+
+### Acceptance criteria
+
+- Remove caller-assigned node identities and the legacy renderer from the release benchmark.
+- Measure initial reconciliation, atomic batch application and confirmed snapshot promotion.
+- Expose allocation-free logical host metrics without leaking adapter graph internals.
+- Fail the benchmark when the published host omits nodes or parent-child edges.
+- Preserve existing reconciliation and commit-promotion budgets.
+
+### Delivered
+
+- Replaced legacy `UiTree` validation/mount timing with declarative validation and committed mount.
+- Benchmarked the real `HeadlessMutationAdapter` behind `CommitCoordinator` for 1,001 nodes.
+- Added typed `HeadlessHostMetrics` for revision, nodes, edges and properties.
+- Extended the headless adapter contract with exact logical metric assertions.
+- Narrowed TD-005 to legacy renderer/runtime tests and the obsolete mount API.
+
+### Validation evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 58 workspace tests, including exact headless metric assertions |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | Metrics stay inside the adapter and benchmark remains composition-only |
+| Independent regressions | Passed | Architecture check and all 85 Python specification tests |
+| Release performance gate | Passed | Committed mount and existing reconciliation/commit budgets |
+
+[GitHub Actions run 36268542149](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36268542149)
+measured 116,961 ns average candidate validation and 348,647 ns average initial reconciliation,
+atomic host application and promotion for 1,001 nodes. The published host reported revision 1,
+1,001 nodes, 1,000 edges and zero properties. Existing averages remained within budget: 114,727 ns
+movement, 103,097 ns insertion, 103,648 ns removal, 102,864 ns replacement and 107,138 ns
+unchanged commit promotion. These are release-runner averages, not tail latency. Python remains
+independent verification and contains no runtime code.
+
+### Next increment
+
+Replace the remaining legacy renderer and runtime mount contracts with committed-path contracts,
+then remove the caller-identified bootstrap API with an explicit migration note.

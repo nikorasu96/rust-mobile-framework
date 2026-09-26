@@ -71,6 +71,41 @@ struct HostState {
     nodes: BTreeMap<u64, HostNode>,
 }
 
+/// Allocation-free logical metrics for the currently published headless host state.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct HeadlessHostMetrics {
+    revision: u64,
+    nodes: usize,
+    edges: usize,
+    properties: usize,
+}
+
+impl HeadlessHostMetrics {
+    /// Returns the applied host revision.
+    #[must_use]
+    pub const fn revision(self) -> u64 {
+        self.revision
+    }
+
+    /// Returns the number of live host nodes.
+    #[must_use]
+    pub const fn nodes(self) -> usize {
+        self.nodes
+    }
+
+    /// Returns the number of parent-child edges.
+    #[must_use]
+    pub const fn edges(self) -> usize {
+        self.edges
+    }
+
+    /// Returns the number of stored property values.
+    #[must_use]
+    pub const fn properties(self) -> usize {
+        self.properties
+    }
+}
+
 /// Deterministic host adapter that applies a whole batch atomically in memory.
 ///
 /// Every batch is evaluated against a private state copy. Invalid input is therefore classified
@@ -91,6 +126,29 @@ impl HeadlessMutationAdapter {
     #[must_use]
     pub fn node_count(&self) -> usize {
         self.state.nodes.len()
+    }
+
+    /// Returns logical host-state metrics without exposing internal graph storage.
+    #[must_use]
+    pub fn metrics(&self) -> HeadlessHostMetrics {
+        let edges = self
+            .state
+            .nodes
+            .values()
+            .map(|node| node.children.len())
+            .sum();
+        let properties = self
+            .state
+            .nodes
+            .values()
+            .map(|node| node.properties.len())
+            .sum();
+        HeadlessHostMetrics {
+            revision: self.state.revision,
+            nodes: self.state.nodes.len(),
+            edges,
+            properties,
+        }
     }
 
     /// Returns the current root identity, if a snapshot is mounted.

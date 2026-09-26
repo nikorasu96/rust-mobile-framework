@@ -125,6 +125,7 @@ from fixture I/O so every contract consumes one authoritative implementation.
 The executable headless composition root now uses validated declarations, reconciliation,
 `CommitCoordinator` and `HeadlessMutationAdapter`; callers no longer assign its node identities.
 The bootstrap `Renderer` path still renders a complete caller-identified tree only for legacy
-benchmark and contract coverage. New platform work uses the commit ports; Android adapters do not
+renderer/runtime contract coverage. The benchmark and example use the committed pipeline. New
+platform work uses the commit ports; Android adapters do not
 calculate tree identity or diff semantics. Replacing that remaining coverage and removing the
 bootstrap path remain explicit gates before Android integration.
