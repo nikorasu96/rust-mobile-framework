@@ -29,7 +29,7 @@
 - [x] Add deterministic generated tests for commit-state safety invariants.
 - [x] Exhaustively explore bounded commit-state transitions and recovery boundaries.
 - [x] Apply prepared commits through a typed Rust host port and promote only after success.
-- [ ] Implement full-remount recovery after partial host mutation.
+- [x] Implement full-remount recovery after partial host mutation.
 - [x] Specify generational surface creation, disposal and stale-callback rejection.
 - [x] Add deterministic generated tests for surface lifecycle invariants.
 - [x] Exhaustively explore bounded lifecycle states, handles and isolation invariants.

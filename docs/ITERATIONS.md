@@ -1617,3 +1617,37 @@ verification and contains no new runtime implementation.
 
 Implement `SnapshotRemounter` recovery of the last confirmed snapshot, including retry after
 remount failure, before adapting the headless renderer to mutation batches.
+
+## 2026-09-26 — Retryable confirmed-snapshot recovery in Rust
+
+### Acceptance criteria
+
+- Introduce a capability-specific full-snapshot remount port without platform dependencies.
+- Remount only the last host-confirmed snapshot after a possibly partial batch application.
+- Keep commits blocked after remount failure and allow an explicit recovery retry.
+- Return to ready only after complete host success without promoting the failed candidate.
+- Preserve all existing correctness and release performance gates.
+
+### Delivered
+
+- Added production Rust `SnapshotRemounter`, `RecoveryError` and observable `Remounting` state.
+- Added retryable recovery to `CommitCoordinator` without changing its confirmed snapshot.
+- Kept recovery unnecessary, applying, remounting and adapter failures explicitly typed.
+- Added Rust contracts for successful recovery, failed-remount retry and no-op rejection.
+- Kept Android threading and actual native hierarchy restoration behind a platform adapter.
+
+### Validation evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Pending CI | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Pending CI | Workspace tests including seven runtime commit contracts |
+| Rust documentation | Pending CI | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Pending | Runtime remains platform-independent and depends only inward |
+| Independent regressions | Pending | Architecture check and Python specification tests |
+| Release performance gate | Pending CI | Existing reconciliation, commit and frame budgets |
+
+### Next increment
+
+Migrate the headless adapter from caller-assigned bootstrap identities to mutation-batch
+application and confirmed-snapshot remount, then remove the obsolete full-tree renderer path.

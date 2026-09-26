@@ -14,7 +14,9 @@ child move, insertion, removal or replacement per sibling list. Multiple structu
 multi-move reorders remain unavailable through an explicit typed error. `rmf-runtime` owns application
 orchestration and outbound ports. Its `CommitCoordinator` checks the confirmed base revision,
 applies an immutable batch and publishes the prepared snapshot only after adapter success. Safe
-host rejection remains ready; a possibly partial mutation blocks later commits pending recovery.
+host rejection remains ready; a possibly partial mutation blocks later commits until the adapter
+successfully remounts the last confirmed snapshot. Failed remounts remain retryable without
+promoting the failed candidate.
 Adapters implement those ports. Composition roots select
 concrete adapters and are the only place allowed to wire them.
 
@@ -116,6 +118,6 @@ a live surface; failed or closed hosts retain neither. The surface transition mo
 from fixture I/O so every contract consumes one authoritative implementation.
 
 The bootstrap `Renderer` path still renders a complete caller-identified tree and is retained
-only for the headless example. New platform work consumes mutation batches through the runtime
-coordinator; Android adapters do not calculate tree identity or diff semantics. Removing the
-bootstrap path and adding full-remount recovery remain explicit gates before Android integration.
+only for the headless example. New platform work consumes mutation batches and confirmed-snapshot
+remounts through the runtime coordinator; Android adapters do not calculate tree identity or diff
+semantics. Removing the bootstrap path remains an explicit gate before Android integration.
