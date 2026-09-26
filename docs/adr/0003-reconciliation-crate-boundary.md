@@ -162,8 +162,8 @@ The crate may enter the workspace only in an increment where all of these run su
 8. Architecture verification proving only `rmf-core` is depended on by the new crate.
 9. Dependency license and vulnerability checks, even if the expected dependency set is local.
 
-Until those gates pass, roadmap status remains “executable contract,” not “Rust
-implementation.” JNI and Android work remain blocked by TD-001 and TD-005.
+The compiled crate now passes these gates in repository CI. Android work still requires its own
+compiled Rust/Kotlin/JNI toolchain gates; TD-001 records the local Rust-toolchain limitation.
 
 ## Consequences
 

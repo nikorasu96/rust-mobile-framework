@@ -1,6 +1,6 @@
 # ADR-0002: Immutable properties and deterministic reconciliation
 
-- Status: Accepted; declarative candidate model implemented, reconciliation pending
+- Status: Accepted; candidate, committed identity and bootstrap migration implemented
 - Date: 2026-09-19
 - Supersedes: the bootstrap assumption that callers assign every `NodeId`
 
@@ -132,10 +132,10 @@ traversal is preferred for untrusted or deeply nested input.
 
 ## Migration from the bootstrap model
 
-The pre-alpha `UiNode::new(NodeId, ...)` API is temporary. Migration will introduce a
-declarative node without caller-assigned IDs, then place runtime identities in committed
-nodes. Because the project is pre-alpha and unpublished, this breaking correction must
-happen before a stable facade or Android adapter is built.
+The pre-alpha `UiNode::new(NodeId, ...)` API was removed in `0.2.0-alpha.1` after the example,
+benchmark and headless contracts moved to declarative candidates and committed snapshots.
+ADR-0012 records the breaking source migration and proves that runtime identities now originate
+only in reconciliation.
 
 ## Consequences
 

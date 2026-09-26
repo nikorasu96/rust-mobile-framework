@@ -1,6 +1,6 @@
 # ADR-0007: Android adapter module and build topology
 
-- Status: Accepted topology; implementation blocked by TD-001 and TD-005
+- Status: Accepted topology; compiled Android implementation pending
 - Date: 2026-09-20
 - Depends on: ADR-0003, ADR-0005 and ADR-0006
 
