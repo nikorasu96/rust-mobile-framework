@@ -83,20 +83,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let keyed_removal_average = keyed_removal_started.elapsed() / ITERATIONS;
 
-    let replacement_base = build_keyed_replacement_tree(NODE_COUNT, false)?;
-    let replacement_snapshot = reconciler
-        .prepare(&SurfaceSnapshot::empty(), &replacement_base)?
-        .into_snapshot();
-    let replaced_candidate = build_keyed_replacement_tree(NODE_COUNT, true)?;
-    let keyed_replacement_started = Instant::now();
-    for _ in 0..ITERATIONS {
-        let prepared = reconciler.prepare(
-            black_box(&replacement_snapshot),
-            black_box(&replaced_candidate),
-        )?;
-        black_box(prepared);
-    }
-    let keyed_replacement_average = keyed_replacement_started.elapsed() / ITERATIONS;
+    let keyed_replacement_average = measure_keyed_replacement(&reconciler)?;
 
     println!("nodes={NODE_COUNT}");
     println!("iterations={ITERATIONS}");
@@ -144,6 +131,20 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("budget_status=passed");
     Ok(())
+}
+
+fn measure_keyed_replacement(reconciler: &Reconciler) -> Result<Duration, Box<dyn Error>> {
+    let base = build_keyed_replacement_tree(NODE_COUNT, false)?;
+    let snapshot = reconciler
+        .prepare(&SurfaceSnapshot::empty(), &base)?
+        .into_snapshot();
+    let candidate = build_keyed_replacement_tree(NODE_COUNT, true)?;
+    let started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared = reconciler.prepare(black_box(&snapshot), black_box(&candidate))?;
+        black_box(prepared);
+    }
+    Ok(started.elapsed() / ITERATIONS)
 }
 
 fn build_keyed_replacement_tree(
