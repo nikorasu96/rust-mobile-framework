@@ -40,18 +40,18 @@ impl Runtime {
     ///
     /// # Errors
     ///
-    /// Returns [StaleSurfaceHandle] without mutation when the handle is no longer active.
+    /// Returns [`StaleSurfaceHandle`] without mutation when the handle is no longer active.
     pub fn dispose_surface(&mut self, handle: SurfaceHandle) -> Result<(), StaleSurfaceHandle> {
         self.surfaces.dispose(handle)
     }
 
     /// Admits one callback only while its complete generational handle is live.
     ///
-    /// The callback runs at most once and cannot retain the borrowed [SurfaceAccess] proof.
+    /// The callback runs at most once and cannot retain the borrowed [`SurfaceAccess`] proof.
     ///
     /// # Errors
     ///
-    /// Returns [StaleSurfaceHandle] without invoking the callback when the handle is stale.
+    /// Returns [`StaleSurfaceHandle`] without invoking the callback when the handle is stale.
     pub fn dispatch_surface_callback<T>(
         &self,
         handle: SurfaceHandle,
