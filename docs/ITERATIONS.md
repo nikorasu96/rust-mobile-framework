@@ -1576,3 +1576,31 @@ budget passed. Python remains independent verification and contains no new runti
 
 Integrate `PreparedCommit` into a dedicated runtime mutation-application port with revision-guarded
 promotion, reducing TD-005 without introducing Android or JNI concerns into the core.
+
+## 2026-09-26 — Revision-guarded commit application in Rust
+
+### Acceptance criteria
+
+- Add a capability-specific host batch port with explicit pre-mutation and partial-failure classes.
+- Reject a stale prepared batch before invoking the host adapter.
+- Publish the prepared snapshot only after complete host success.
+- Keep safe rejection ready at the confirmed revision and block commits after partial mutation.
+- Measure 100 unchanged 1,000-sibling prepare-and-promote cycles under a 1 ms provisional budget.
+
+### Delivered
+
+- Added production Rust `BatchApplier`, `ApplyFailure`, `CommitStatus` and `CommitCoordinator`.
+- Made the coordinator own the last confirmed immutable snapshot and transient applying state.
+- Added typed stale, safe rejection, partial failure and recovery-required outcomes.
+- Added Rust contracts for promotion, stale rejection, safe rejection and fail-closed blocking.
+- Added the inward `rmf-runtime -> rmf-reconciliation` dependency required by ADR-0003.
+- Kept full-remount recovery and legacy bootstrap removal explicit rather than claiming completion.
+
+### Validation evidence
+
+CI evidence and measured release metrics are recorded only after the pinned Rust workflow passes.
+
+### Next increment
+
+Implement `SnapshotRemounter` recovery of the last confirmed snapshot, including retry after
+remount failure, before adapting the headless renderer to mutation batches.

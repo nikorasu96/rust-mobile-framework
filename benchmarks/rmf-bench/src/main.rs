@@ -1,5 +1,6 @@
 #![doc = "Dependency-free release performance gate."]
 
+use std::convert::Infallible;
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 use std::hint::black_box;
@@ -9,8 +10,9 @@ use rmf_core::candidate::{
     CandidateLimits, ComponentKind, DeclarativeNode, Key, PropertySet, ValidatedTree,
 };
 use rmf_core::{Element, NodeId, UiNode, UiTree};
-use rmf_reconciliation::{ReconcileLimits, Reconciler, SurfaceSnapshot};
+use rmf_reconciliation::{MutationBatch, ReconcileLimits, Reconciler, SurfaceSnapshot};
 use rmf_renderer_headless::HeadlessRenderer;
+use rmf_runtime::commit::{ApplyFailure, BatchApplier, CommitCoordinator};
 use rmf_runtime::Runtime;
 
 const NODE_COUNT: usize = 1_000;
@@ -21,6 +23,7 @@ const KEYED_MOVE_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_INSERTION_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_REMOVAL_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_REPLACEMENT_BUDGET: Duration = Duration::from_millis(5);
+const COMMIT_PROMOTION_BUDGET: Duration = Duration::from_millis(1);
 const FRAME_BYTES_BUDGET: usize = 2 * 1024 * 1024;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -55,35 +58,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let keyed_move_average = keyed_move_started.elapsed() / ITERATIONS;
 
-    let insertion_base = build_keyed_insertion_tree(NODE_COUNT, false)?;
-    let insertion_snapshot = reconciler
-        .prepare(&SurfaceSnapshot::empty(), &insertion_base)?
-        .into_snapshot();
-    let inserted_candidate = build_keyed_insertion_tree(NODE_COUNT, true)?;
-    let keyed_insertion_started = Instant::now();
-    for _ in 0..ITERATIONS {
-        let prepared = reconciler.prepare(
-            black_box(&insertion_snapshot),
-            black_box(&inserted_candidate),
-        )?;
-        black_box(prepared);
-    }
-    let keyed_insertion_average = keyed_insertion_started.elapsed() / ITERATIONS;
-
-    let removal_base = build_keyed_removal_tree(NODE_COUNT, false)?;
-    let removal_snapshot = reconciler
-        .prepare(&SurfaceSnapshot::empty(), &removal_base)?
-        .into_snapshot();
-    let removed_candidate = build_keyed_removal_tree(NODE_COUNT, true)?;
-    let keyed_removal_started = Instant::now();
-    for _ in 0..ITERATIONS {
-        let prepared =
-            reconciler.prepare(black_box(&removal_snapshot), black_box(&removed_candidate))?;
-        black_box(prepared);
-    }
-    let keyed_removal_average = keyed_removal_started.elapsed() / ITERATIONS;
+    let keyed_insertion_average = measure_keyed_insertion(reconciler)?;
+    let keyed_removal_average = measure_keyed_removal(reconciler)?;
 
     let keyed_replacement_average = measure_keyed_replacement(reconciler)?;
+    let commit_promotion_average = measure_commit_promotion()?;
 
     println!("nodes={NODE_COUNT}");
     println!("iterations={ITERATIONS}");
@@ -101,6 +80,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!(
         "keyed_replacement_average_ns={}",
         keyed_replacement_average.as_nanos()
+    );
+    println!(
+        "commit_promotion_average_ns={}",
+        commit_promotion_average.as_nanos()
     );
     println!("frame_bytes={frame_bytes}");
 
@@ -122,6 +105,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         keyed_replacement_average,
         KEYED_REPLACEMENT_BUDGET,
     )?;
+    enforce_budget(
+        "commit promotion average",
+        commit_promotion_average,
+        COMMIT_PROMOTION_BUDGET,
+    )?;
     if frame_bytes > FRAME_BYTES_BUDGET {
         return Err(Box::new(BudgetExceeded::Bytes {
             actual: frame_bytes,
@@ -131,6 +119,63 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("budget_status=passed");
     Ok(())
+}
+
+#[derive(Debug, Default)]
+struct NoopBatchApplier;
+
+impl BatchApplier for NoopBatchApplier {
+    type Error = Infallible;
+
+    fn apply_batch(
+        &mut self,
+        _batch: &MutationBatch,
+    ) -> Result<(), ApplyFailure<Self::Error>> {
+        Ok(())
+    }
+}
+
+fn measure_commit_promotion() -> Result<Duration, Box<dyn Error>> {
+    let reconciler = Reconciler::new(ReconcileLimits::new(3_000)?);
+    let candidate = build_keyed_sibling_tree(NODE_COUNT, false)?;
+    let mut coordinator = CommitCoordinator::new(NoopBatchApplier);
+    let initial = reconciler.prepare(coordinator.confirmed_snapshot(), &candidate)?;
+    coordinator.apply(initial)?;
+
+    let started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared = reconciler.prepare(coordinator.confirmed_snapshot(), &candidate)?;
+        coordinator.apply(prepared)?;
+    }
+    Ok(started.elapsed() / ITERATIONS)
+}
+
+fn measure_keyed_insertion(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {
+    let base = build_keyed_insertion_tree(NODE_COUNT, false)?;
+    let snapshot = reconciler
+        .prepare(&SurfaceSnapshot::empty(), &base)?
+        .into_snapshot();
+    let candidate = build_keyed_insertion_tree(NODE_COUNT, true)?;
+    let started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared = reconciler.prepare(black_box(&snapshot), black_box(&candidate))?;
+        black_box(prepared);
+    }
+    Ok(started.elapsed() / ITERATIONS)
+}
+
+fn measure_keyed_removal(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {
+    let base = build_keyed_removal_tree(NODE_COUNT, false)?;
+    let snapshot = reconciler
+        .prepare(&SurfaceSnapshot::empty(), &base)?
+        .into_snapshot();
+    let candidate = build_keyed_removal_tree(NODE_COUNT, true)?;
+    let started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared = reconciler.prepare(black_box(&snapshot), black_box(&candidate))?;
+        black_box(prepared);
+    }
+    Ok(started.elapsed() / ITERATIONS)
 }
 
 fn measure_keyed_replacement(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {

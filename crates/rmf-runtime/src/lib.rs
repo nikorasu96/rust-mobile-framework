@@ -9,6 +9,7 @@ use surface::{
 };
 
 pub mod surface;
+pub mod commit;
 
 /// Outbound port implemented by platform-specific renderers.
 pub trait Renderer {

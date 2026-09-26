@@ -12,7 +12,10 @@ tree limits. `rmf-reconciliation` owns runtime identities, immutable snapshots a
 calculation. It implements deterministic initial mounts, property updates, and one linear-time keyed
 child move, insertion, removal or replacement per sibling list. Multiple structural changes and
 multi-move reorders remain unavailable through an explicit typed error. `rmf-runtime` owns application
-orchestration and outbound ports. Adapters implement those ports. Composition roots select
+orchestration and outbound ports. Its `CommitCoordinator` checks the confirmed base revision,
+applies an immutable batch and publishes the prepared snapshot only after adapter success. Safe
+host rejection remains ready; a possibly partial mutation blocks later commits pending recovery.
+Adapters implement those ports. Composition roots select
 concrete adapters and are the only place allowed to wire them.
 
 ## Boundary rules
@@ -112,7 +115,7 @@ only the current host's resources. An active facade therefore always has both an
 a live surface; failed or closed hosts retain neither. The surface transition model is separated
 from fixture I/O so every contract consumes one authoritative implementation.
 
-The first slice intentionally renders a complete tree. ADR-0002 defines the immutable
-property and reconciliation contract that will replace this bootstrap behavior after the
-Rust build gate passes. Android adapters consume mutation batches; they do not calculate
-tree identity or diff semantics.
+The bootstrap `Renderer` path still renders a complete caller-identified tree and is retained
+only for the headless example. New platform work consumes mutation batches through the runtime
+coordinator; Android adapters do not calculate tree identity or diff semantics. Removing the
+bootstrap path and adding full-remount recovery remain explicit gates before Android integration.
