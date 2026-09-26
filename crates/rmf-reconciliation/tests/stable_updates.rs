@@ -114,20 +114,19 @@ fn removes_properties_in_canonical_identity_order() {
 
 #[test]
 fn rejects_unkeyed_replacement_atomically() {
-    let properties = properties(vec![PropertyEntry::new(
-        property_id(1),
-        PropertyValue::String(String::from("same")),
-    )]);
     let current = reconciler()
         .prepare(
             &SurfaceSnapshot::empty(),
-            &unkeyed_tree(ComponentKind::Text, properties.clone()),
+            &unkeyed_tree(ComponentKind::Text, PropertySet::empty()),
         )
         .unwrap_or_else(|error| unreachable!("initial unkeyed fixture must prepare: {error}"))
         .into_snapshot();
 
     assert_eq!(
-        reconciler().prepare(&current, &unkeyed_tree(ComponentKind::View, properties),),
+        reconciler().prepare(
+            &current,
+            &unkeyed_tree(ComponentKind::View, PropertySet::empty()),
+        ),
         Err(ReconcileError::StructuralChangeUnsupported)
     );
     assert_eq!(current.revision().get(), 1);
