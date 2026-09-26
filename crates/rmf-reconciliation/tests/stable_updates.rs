@@ -27,6 +27,13 @@ fn tree(text_properties: PropertySet, key: &str) -> ValidatedTree {
         .unwrap_or_else(|error| unreachable!("valid fixture candidate: {error}"))
 }
 
+fn unkeyed_tree(kind: ComponentKind, properties: PropertySet) -> ValidatedTree {
+    let child = DeclarativeNode::new(kind, None, properties, vec![]);
+    let root = DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), vec![child]);
+    ValidatedTree::new(root, CandidateLimits::default())
+        .unwrap_or_else(|error| unreachable!("valid unkeyed fixture candidate: {error}"))
+}
+
 fn reconciler() -> Reconciler {
     Reconciler::new(
         ReconcileLimits::new(20)
@@ -106,15 +113,20 @@ fn removes_properties_in_canonical_identity_order() {
 }
 
 #[test]
-fn rejects_key_change_atomically() {
-    let properties = properties(vec![PropertyEntry::new(
-        property_id(1),
-        PropertyValue::String(String::from("same")),
-    )]);
-    let current = initial_snapshot(properties.clone(), "before");
+fn rejects_unkeyed_replacement_atomically() {
+    let current = reconciler()
+        .prepare(
+            &SurfaceSnapshot::empty(),
+            &unkeyed_tree(ComponentKind::Text, PropertySet::empty()),
+        )
+        .unwrap_or_else(|error| unreachable!("initial unkeyed fixture must prepare: {error}"))
+        .into_snapshot();
 
     assert_eq!(
-        reconciler().prepare(&current, &tree(properties, "after")),
+        reconciler().prepare(
+            &current,
+            &unkeyed_tree(ComponentKind::View, PropertySet::empty()),
+        ),
         Err(ReconcileError::StructuralChangeUnsupported)
     );
     assert_eq!(current.revision().get(), 1);

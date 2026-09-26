@@ -5,10 +5,11 @@ deterministic host mutation batches. Its only dependency is `rmf-core`; it conta
 runtime orchestration, Android, JNI or TypeScript concerns.
 
 The current implementation supports initial mounting, property updates, and one keyed child move,
-insertion or removal per sibling list. Every structural path uses bounded linear scans and
+insertion, removal or replacement per sibling list. Every structural path uses bounded linear scans and
 preserves matching runtime identities. Removal detaches every subtree edge before deleting nodes
-descendant-first. Replacement, multiple structural changes and reorders requiring multiple moves
-remain typed errors until their strategy is implemented and benchmarked.
+descendant-first. Replacement always allocates fresh identities for incompatible keyed nodes.
+Multiple structural changes and reorders requiring multiple moves remain typed errors until their
+strategy is implemented and benchmarked.
 
 Ownership rules:
 
