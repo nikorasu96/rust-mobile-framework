@@ -1607,9 +1607,9 @@ promotion, reducing TD-005 without introducing Android or JNI concerns into the 
 | Independent regressions | Passed | Architecture check and all 85 Python tests |
 | Release performance gate | Passed | 100 unchanged 1,000-sibling prepare-and-promote cycles plus existing budgets |
 
-[GitHub Actions run 36244158259](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36244158259)
-measured 107,406 ns average commit promotion, 102,582 ns keyed replacement, 103,251 ns
-removal, 102,716 ns insertion, 112,111 ns movement, 83,356 ns validation, 153,714 ns mount
+[GitHub Actions run 36244269227](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36244269227)
+measured 106,756 ns average commit promotion, 102,267 ns keyed replacement, 102,590 ns
+removal, 101,637 ns insertion, 112,060 ns movement, 82,239 ns validation, 150,221 ns mount
 and a 1,007,899-byte frame. Every provisional budget passed. Python remains independent
 verification and contains no new runtime implementation.
 
