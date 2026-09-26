@@ -73,7 +73,7 @@ impl Display for ReconcileError {
                 )
             }
             Self::StructuralChangeUnsupported => formatter.write_str(
-                "structural removal, replacement, multiple insertion or multiple-child reorder is not implemented",
+                "structural removal, replacement, multiple insertions or multiple-child reorder is not implemented",
             ),
             Self::InvariantViolation => formatter.write_str("reconciliation invariant violated"),
         }

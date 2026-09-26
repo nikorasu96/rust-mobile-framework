@@ -23,14 +23,7 @@ fn tree(keys: &[&str]) -> ValidatedTree {
 
 fn unkeyed_tree(child_count: usize) -> ValidatedTree {
     let children = (0..child_count)
-        .map(|_| {
-            DeclarativeNode::new(
-                ComponentKind::Text,
-                None,
-                PropertySet::empty(),
-                vec![],
-            )
-        })
+        .map(|_| DeclarativeNode::new(ComponentKind::Text, None, PropertySet::empty(), vec![]))
         .collect();
     let root = DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), children);
     ValidatedTree::new(root, CandidateLimits::default())
