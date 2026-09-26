@@ -51,7 +51,7 @@ fn reconciler() -> Reconciler {
 
 fn apply_candidate(
     coordinator: &mut CommitCoordinator<HeadlessMutationAdapter>,
-    reconciler: &Reconciler,
+    reconciler: Reconciler,
     next: &ValidatedTree,
 ) {
     let prepared = reconciler
@@ -74,31 +74,31 @@ fn applies_every_v1_mutation_family_and_tracks_the_committed_snapshot() {
 
     apply_candidate(
         &mut coordinator,
-        &reconciler,
+        reconciler,
         &candidate(vec![text("a", "A"), text("b", "B")]),
     );
     assert_eq!(coordinator.applier().node_count(), 3);
 
     apply_candidate(
         &mut coordinator,
-        &reconciler,
+        reconciler,
         &candidate(vec![text("b", "B2"), text("a", "A")]),
     );
     apply_candidate(
         &mut coordinator,
-        &reconciler,
+        reconciler,
         &candidate(vec![text("b", "B2"), text("c", "C"), text("a", "A")]),
     );
     assert_eq!(coordinator.applier().node_count(), 4);
 
     apply_candidate(
         &mut coordinator,
-        &reconciler,
+        reconciler,
         &candidate(vec![text("c", "C"), text("a", "A")]),
     );
     apply_candidate(
         &mut coordinator,
-        &reconciler,
+        reconciler,
         &candidate(vec![text("c", "C"), view("a")]),
     );
 
