@@ -12,8 +12,8 @@ use rmf_core::candidate::{
 use rmf_core::{Element, NodeId, UiNode, UiTree};
 use rmf_reconciliation::{MutationBatch, ReconcileLimits, Reconciler, SurfaceSnapshot};
 use rmf_renderer_headless::HeadlessRenderer;
-use rmf_runtime::commit::{ApplyFailure, BatchApplier, CommitCoordinator};
 use rmf_runtime::Runtime;
+use rmf_runtime::commit::{ApplyFailure, BatchApplier, CommitCoordinator};
 
 const NODE_COUNT: usize = 1_000;
 const ITERATIONS: u32 = 100;
@@ -127,10 +127,7 @@ struct NoopBatchApplier;
 impl BatchApplier for NoopBatchApplier {
     type Error = Infallible;
 
-    fn apply_batch(
-        &mut self,
-        _batch: &MutationBatch,
-    ) -> Result<(), ApplyFailure<Self::Error>> {
+    fn apply_batch(&mut self, _batch: &MutationBatch) -> Result<(), ApplyFailure<Self::Error>> {
         Ok(())
     }
 }

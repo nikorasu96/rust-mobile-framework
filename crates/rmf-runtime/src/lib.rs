@@ -8,8 +8,8 @@ use surface::{
     SurfaceRegistry,
 };
 
-pub mod surface;
 pub mod commit;
+pub mod surface;
 
 /// Outbound port implemented by platform-specific renderers.
 pub trait Renderer {

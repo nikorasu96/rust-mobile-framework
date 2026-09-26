@@ -47,10 +47,7 @@ impl RecordingApplier {
 impl BatchApplier for RecordingApplier {
     type Error = HostError;
 
-    fn apply_batch(
-        &mut self,
-        batch: &MutationBatch,
-    ) -> Result<(), ApplyFailure<Self::Error>> {
+    fn apply_batch(&mut self, batch: &MutationBatch) -> Result<(), ApplyFailure<Self::Error>> {
         self.calls.push((
             batch.base_revision().get(),
             batch.target_revision().get(),
@@ -135,9 +132,8 @@ fn safe_rejection_keeps_confirmed_snapshot_ready() {
 
 #[test]
 fn partial_failure_blocks_later_commits_without_calling_host() {
-    let applier = RecordingApplier::with_outcome(Err(ApplyFailure::FailedAfterMutation(
-        HostError::Partial,
-    )));
+    let applier =
+        RecordingApplier::with_outcome(Err(ApplyFailure::FailedAfterMutation(HostError::Partial)));
     let mut coordinator = CommitCoordinator::new(applier);
     let first = preparation(coordinator.confirmed_snapshot());
 

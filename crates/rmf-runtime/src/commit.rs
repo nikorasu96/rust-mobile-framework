@@ -45,10 +45,7 @@ pub trait BatchApplier {
     /// # Errors
     ///
     /// Returns the adapter's failure with an explicit mutation phase.
-    fn apply_batch(
-        &mut self,
-        batch: &MutationBatch,
-    ) -> Result<(), ApplyFailure<Self::Error>>;
+    fn apply_batch(&mut self, batch: &MutationBatch) -> Result<(), ApplyFailure<Self::Error>>;
 }
 
 /// Observable state of commit application for one surface.
