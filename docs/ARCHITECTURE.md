@@ -122,8 +122,9 @@ only the current host's resources. An active facade therefore always has both an
 a live surface; failed or closed hosts retain neither. The surface transition model is separated
 from fixture I/O so every contract consumes one authoritative implementation.
 
-The bootstrap `Renderer` path still renders a complete caller-identified tree and is retained
-only for the existing headless example. The separate headless mutation adapter now proves batch
-application and confirmed-snapshot remount without depending on that path. New platform work uses
-the runtime ports; Android adapters do not calculate tree identity or diff semantics. Migrating
-the example and removing the bootstrap path remain explicit gates before Android integration.
+The executable headless composition root now uses validated declarations, reconciliation,
+`CommitCoordinator` and `HeadlessMutationAdapter`; callers no longer assign its node identities.
+The bootstrap `Renderer` path still renders a complete caller-identified tree only for legacy
+benchmark and contract coverage. New platform work uses the commit ports; Android adapters do not
+calculate tree identity or diff semantics. Replacing that remaining coverage and removing the
+bootstrap path remain explicit gates before Android integration.

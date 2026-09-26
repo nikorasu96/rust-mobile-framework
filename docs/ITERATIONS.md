@@ -1701,3 +1701,31 @@ composition-root migration. Python remains independent verification and contains
 
 Migrate `hello-headless` to declarative candidates, reconciliation and `CommitCoordinator`, then
 remove the caller-identified bootstrap tree only after its legacy coverage is replaced.
+
+## 2026-09-26 — Declarative headless composition root in Rust
+
+### Acceptance criteria
+
+- Remove caller-assigned node identities from the executable example.
+- Validate a declarative candidate and reconcile it against the confirmed runtime snapshot.
+- Apply the prepared batch through `CommitCoordinator` and the atomic headless adapter.
+- Prove the executable output and adapter/snapshot agreement with a Rust integration test.
+- Keep legacy API removal separate until its benchmark and contract evidence is replaced.
+
+### Delivered
+
+- Migrated `hello-headless` to `ValidatedTree`, `Reconciler` and `CommitCoordinator`.
+- Applied the initial mount through `HeadlessMutationAdapter` instead of `Runtime::mount`.
+- Added a fail-closed composition-root check that the host agrees with the confirmed snapshot.
+- Added an executable Rust integration test for revision, runtime-owned root identity and node count.
+- Narrowed TD-005 to the remaining legacy benchmark, renderer contracts and mount API.
+
+### Validation evidence
+
+Pending repository CI for Rust formatting, strict Clippy, 58 workspace tests, rustdoc,
+architecture boundaries, 85 independent specification tests and release performance budgets.
+
+### Next increment
+
+Migrate the legacy headless benchmark and renderer contracts to committed snapshots, then remove
+the caller-identified bootstrap API in one separately validated change.
