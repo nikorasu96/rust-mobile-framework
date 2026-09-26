@@ -76,10 +76,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let removed_candidate = build_keyed_removal_tree(NODE_COUNT, true)?;
     let keyed_removal_started = Instant::now();
     for _ in 0..ITERATIONS {
-        let prepared = reconciler.prepare(
-            black_box(&removal_snapshot),
-            black_box(&removed_candidate),
-        )?;
+        let prepared =
+            reconciler.prepare(black_box(&removal_snapshot), black_box(&removed_candidate))?;
         black_box(prepared);
     }
     let keyed_removal_average = keyed_removal_started.elapsed() / ITERATIONS;

@@ -460,10 +460,12 @@ fn detect_single_keyed_removal(
     let mut removal = None;
 
     while previous_index < previous.len() {
-        let keys_match = candidate.get(candidate_index).is_some_and(|candidate_child| {
-            previous[previous_index].key().is_some()
-                && previous[previous_index].key() == candidate_child.key()
-        });
+        let keys_match = candidate
+            .get(candidate_index)
+            .is_some_and(|candidate_child| {
+                previous[previous_index].key().is_some()
+                    && previous[previous_index].key() == candidate_child.key()
+            });
         if keys_match {
             previous_index += 1;
             candidate_index += 1;
