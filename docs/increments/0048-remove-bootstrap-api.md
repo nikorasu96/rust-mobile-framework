@@ -1,7 +1,7 @@
 # Increment 48: Versioned removal of caller-identified bootstrap APIs
 
 - Date: 2026-09-26
-- Status: Pending repository CI
+- Status: Validated in repository CI
 
 ## Acceptance criteria
 
@@ -21,7 +21,21 @@
 
 ## Validation evidence
 
-Repository CI evidence will be recorded before this increment is merged.
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 51 workspace tests after removal of seven obsolete bootstrap tests |
+| Rust documentation | Passed | Workspace rustdoc with warnings denied |
+| Dependency and architecture policy | Passed | Runtime production dependency removed; inward-only test dependency retained |
+| Independent regressions | Passed | Architecture check and all 85 Python specification tests |
+| Release performance gate | Passed | Candidate, committed mount and existing reconciliation/commit budgets |
+
+[GitHub Actions run 36278382712](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36278382712)
+measured 113,880 ns average candidate validation and 350,799 ns average initial reconciliation,
+atomic host application and promotion for 1,001 nodes. Existing averages remained within budget:
+114,279 ns movement, 105,356 ns insertion, 104,506 ns removal, 103,612 ns replacement and
+106,518 ns unchanged commit promotion. These release-runner averages are not tail-latency claims.
+Python remains independent verification and contains no runtime implementation.
 
 ## Next increment
 
