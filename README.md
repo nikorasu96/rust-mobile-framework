@@ -73,6 +73,9 @@ Run the first vertical slice:
 cargo run -p hello-headless
 ```
 
+The example validates a caller-declared tree without runtime IDs, reconciles it into an immutable
+snapshot, applies the resulting mutation batch atomically, and prints the confirmed host summary.
+
 ## Status
 
 Pre-alpha architecture validation. Do not use in production.

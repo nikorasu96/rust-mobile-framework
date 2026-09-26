@@ -26,6 +26,7 @@
 - [x] Implement and benchmark deterministic single-child keyed removal in Rust.
 - [x] Implement and benchmark deterministic single-child keyed replacement in Rust.
 - [x] Specify commit application, promotion and full-remount recovery semantics.
+- [x] Migrate the headless example to declarative reconciliation and atomic commit application.
 - [x] Add deterministic generated tests for commit-state safety invariants.
 - [x] Exhaustively explore bounded commit-state transitions and recovery boundaries.
 - [x] Apply prepared commits through a typed Rust host port and promote only after success.

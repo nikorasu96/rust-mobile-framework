@@ -4,6 +4,8 @@ All notable changes follow semantic versioning once a public API is released.
 
 ## Unreleased
 
+- Migrated `hello-headless` from caller-assigned node IDs to the declarative reconciliation and
+  commit-application pipeline.
 - Added workspace quality policy and pinned Rust toolchain.
 - Added validated platform-independent declarative tree.
 - Added renderer port, runtime mount use case, and deterministic headless adapter.
