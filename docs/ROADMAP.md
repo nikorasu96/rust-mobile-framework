@@ -4,7 +4,7 @@
 
 - [x] Record dependency direction and native-boundary decision.
 - [x] Create a pinned Rust workspace with inherited lints.
-- [x] Implement validated declarative tree and renderer port.
+- [x] Implement the bootstrap tree and renderer port, then retire both after committed-path parity.
 - [x] Add deterministic headless adapter and contract-oriented tests.
 - [x] Add automated architecture-boundary verification.
 - [x] Establish dependency-free benchmark harness and provisional host budgets.
@@ -28,6 +28,7 @@
 - [x] Specify commit application, promotion and full-remount recovery semantics.
 - [x] Migrate the headless example to declarative reconciliation and atomic commit application.
 - [x] Migrate performance gates to confirmed headless mutation application.
+- [x] Remove the caller-identified bootstrap API with an explicit versioned migration.
 - [x] Add deterministic generated tests for commit-state safety invariants.
 - [x] Exhaustively explore bounded commit-state transitions and recovery boundaries.
 - [x] Apply prepared commits through a typed Rust host port and promote only after success.

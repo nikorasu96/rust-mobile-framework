@@ -12,7 +12,7 @@ This file records observed capability, not branding or claimed drop-in compatibi
 | Keyed child insertion | Partial Rust implementation | middle/append identity and atomic-limit Rust tests | One keyed insertion per sibling list; no unkeyed or multiple insertion |
 | Keyed child removal | Partial Rust implementation | identity, subtree ordering and atomic-limit Rust tests | One keyed removal per sibling list; no unkeyed or multiple removal |
 | Keyed child replacement | Partial Rust implementation | kind/key replacement, fresh identity, ordering and atomic-limit Rust tests | One keyed replacement per sibling list; no unkeyed or multiple replacement |
-| Runtime mount port | Legacy | `rmf-runtime` legacy contract test | Caller-identified full-tree bootstrap remains only in renderer/runtime tests pending removal |
+| Caller-identified runtime mount | Removed in `0.2.0-alpha.1` | ADR-0012 and migrated example, benchmark and contracts | Replacement committed pipeline is intentionally not source compatible |
 | Commit application and recovery | Rust implementation | `BatchApplier`, `SnapshotRemounter`, `CommitCoordinator`, Rust contract tests, ADR-0004, eight reviewed fixtures, 800 generated actions and 567 exhaustive transitions | No platform adapter, real UI-thread execution or concurrent executor stress |
 | Surface lifecycle | Rust implementation | `Runtime` lifecycle API, `rmf-runtime::surface`, Rust unit/integration tests, ADR-0005, six fixtures, 800 generated actions and 1,008 exhaustive transitions | No Android adapter, concurrent executor stress or unbounded proof |
 | Android FFI boundary | Executable contract | ADR-0006, ten admission fixtures, 34 reviewed binary cases and 2,128 exhaustive one-bit mutations | Only click and three commit outcomes are modeled; no compiled JNI, Kotlin, CheckJNI or emulator evidence |
@@ -25,7 +25,7 @@ This file records observed capability, not branding or claimed drop-in compatibi
 | Android rendering | Not started | — | No JNI/Kotlin layer |
 | TypeScript/React API | Not started | — | No JS engine or bindings |
 | Reconciliation | Partial Rust implementation | ADR-0002, compiled initial/property/move/insertion/removal/replacement contracts, runtime batch application and recovery, thirty-one v1 fixtures and 200 generated transitions | No multiple structural changes or general reorder |
-| Typed properties | Executable contract | Versioned `View`/`Text` schema plus contract fixtures | Bootstrap Rust tree has no property set |
+| Typed properties | Rust implementation | Versioned `View`/`Text` schema, candidate validation and reconciliation contracts | Initial schema remains intentionally small |
 | Layout and styling | Not started | — | No layout engine |
 | Events and accessibility | Contract seed | Typed `CLICK` FFI body with node identity and sequence | No listener, native dispatch, accessibility semantics or state integration |
 | iOS | Deferred | — | Begins after Android gates |

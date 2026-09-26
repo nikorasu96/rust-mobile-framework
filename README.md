@@ -8,12 +8,13 @@ observable capability in [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md).
 
 ## Current verified slice
 
-The first slice models a declarative UI tree, validates structural invariants, mounts
-it through a renderer port, and provides a deterministic headless adapter. The slice
-contains no native or third-party dependency, keeping architectural validation cheap.
+The verified slice validates declarative candidates, reconciles runtime-owned identities,
+applies mutation batches through a revision-guarded coordinator, and confirms a deterministic
+headless host. The slice contains no native or third-party dependency, keeping architectural
+validation cheap.
 
 ```text
-declarative tree -> validation -> runtime port -> headless renderer
+declaration -> validation -> reconciliation -> commit coordinator -> host adapter
 ```
 
 ## Repository map
@@ -21,8 +22,8 @@ declarative tree -> validation -> runtime port -> headless renderer
 - `crates/rmf-core`: platform-independent UI model and invariants.
 - `crates/rmf-reconciliation`: compiled pure commit service for runtime-owned identities,
   immutable snapshots and deterministic mutation batches.
-- `crates/rmf-runtime`: use-case orchestration and renderer ports.
-- `adapters/rmf-renderer-headless`: deterministic outbound adapter for tests/tools.
+- `crates/rmf-runtime`: surface lifecycle, commit orchestration and narrow host ports.
+- `adapters/rmf-renderer-headless`: deterministic mutation/remount adapter for tests/tools.
 - `examples/hello-headless`: executable composition root.
 - `platforms/android`: compile-gated Android module, ABI and artifact topology from ADR-0007.
 - `platforms`: later platform adapters; iOS begins only after Android gates.

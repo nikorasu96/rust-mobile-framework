@@ -1,6 +1,6 @@
 # ADR-0006: Android JNI boundary v1
 
-- Status: Accepted contract; implementation blocked by TD-001 and TD-005
+- Status: Accepted contract; compiled Android implementation pending
 - Date: 2026-09-20
 - Depends on: ADR-0004 and ADR-0005
 
