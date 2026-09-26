@@ -18,6 +18,7 @@ const ITERATIONS: u32 = 100;
 const VALIDATION_BUDGET: Duration = Duration::from_millis(1);
 const MOUNT_BUDGET: Duration = Duration::from_millis(2);
 const KEYED_MOVE_BUDGET: Duration = Duration::from_millis(5);
+const KEYED_INSERTION_BUDGET: Duration = Duration::from_millis(5);
 const FRAME_BYTES_BUDGET: usize = 2 * 1024 * 1024;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -52,16 +53,40 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let keyed_move_average = keyed_move_started.elapsed() / ITERATIONS;
 
+    let insertion_base = build_keyed_insertion_tree(NODE_COUNT, false)?;
+    let insertion_snapshot = reconciler
+        .prepare(&SurfaceSnapshot::empty(), &insertion_base)?
+        .into_snapshot();
+    let inserted_candidate = build_keyed_insertion_tree(NODE_COUNT, true)?;
+    let keyed_insertion_started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared = reconciler.prepare(
+            black_box(&insertion_snapshot),
+            black_box(&inserted_candidate),
+        )?;
+        black_box(prepared);
+    }
+    let keyed_insertion_average = keyed_insertion_started.elapsed() / ITERATIONS;
+
     println!("nodes={NODE_COUNT}");
     println!("iterations={ITERATIONS}");
     println!("validation_average_ns={}", validation_average.as_nanos());
     println!("mount_average_ns={}", mount_average.as_nanos());
     println!("keyed_move_average_ns={}", keyed_move_average.as_nanos());
+    println!(
+        "keyed_insertion_average_ns={}",
+        keyed_insertion_average.as_nanos()
+    );
     println!("frame_bytes={frame_bytes}");
 
     enforce_budget("validation average", validation_average, VALIDATION_BUDGET)?;
     enforce_budget("mount average", mount_average, MOUNT_BUDGET)?;
     enforce_budget("keyed move average", keyed_move_average, KEYED_MOVE_BUDGET)?;
+    enforce_budget(
+        "keyed insertion average",
+        keyed_insertion_average,
+        KEYED_INSERTION_BUDGET,
+    )?;
     if frame_bytes > FRAME_BYTES_BUDGET {
         return Err(Box::new(BudgetExceeded::Bytes {
             actual: frame_bytes,
@@ -71,6 +96,30 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("budget_status=passed");
     Ok(())
+}
+
+fn build_keyed_insertion_tree(
+    final_child_count: usize,
+    include_inserted_child: bool,
+) -> Result<ValidatedTree, Box<dyn Error>> {
+    let existing_count = final_child_count.saturating_sub(1);
+    let mut keys: Vec<usize> = (0..existing_count).collect();
+    if include_inserted_child {
+        keys.insert(final_child_count / 2, existing_count);
+    }
+    let children = keys
+        .into_iter()
+        .map(|index| {
+            DeclarativeNode::new(
+                ComponentKind::Text,
+                Some(Key::new(index.to_string())),
+                PropertySet::empty(),
+                vec![],
+            )
+        })
+        .collect();
+    let root = DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), children);
+    Ok(ValidatedTree::new(root, CandidateLimits::default())?)
 }
 
 fn build_keyed_sibling_tree(

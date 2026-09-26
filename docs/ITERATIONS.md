@@ -1452,3 +1452,45 @@ remains below its provisional 5 ms budget. No new Python implementation was adde
 
 Implement keyed insertion and removal with deterministic detach/delete ordering, preserving the
 single-move linear path and adding dedicated mutation benchmarks.
+
+## 2026-09-26 — Deterministic keyed child insertion in Rust
+
+### Acceptance criteria
+
+- Detect exactly one keyed insertion per sibling list with bounded linear work.
+- Preserve every existing sibling identity and allocate only the inserted subtree identities.
+- Emit parent-safe `Create` operations before one checked `InsertChild` operation.
+- Reject unkeyed ambiguity, multiple insertions and operation-limit failures atomically.
+- Add a 1,000-sibling release benchmark with an explicit 5 ms provisional budget.
+
+### Delivered
+
+- Added production Rust reconciliation for one keyed insertion at any sibling position.
+- Rebuilt the immutable snapshot in candidate order while retaining every matched `NodeId`.
+- Reused topological subtree creation so descendants are fully created and attached before the
+  inserted subtree is attached to its existing parent.
+- Added Rust contracts for middle insertion, append, unkeyed rejection and atomic budget failure.
+- Extended the release harness with 100 preparations of a middle insertion among 1,000 siblings.
+- Kept removal, replacement, multiple insertion and general reorder behind the typed structural
+  rejection boundary.
+
+### Validation evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 38 tests, including fourteen reconciliation public contract tests |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | `rmf-reconciliation` still depends only on local `rmf-core` |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 1,000 keyed siblings × 100 insertion preparations plus existing budgets |
+
+[GitHub Actions run 36225903049](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36225903049)
+measured 95,435 ns average keyed insertion, 109,904 ns keyed movement, 92,922 ns validation,
+159,057 ns mount and a 1,007,899-byte frame. Every provisional budget passed. Python remains
+independent verification and contains no new runtime implementation.
+
+### Next increment
+
+Implement one keyed removal with deterministic `RemoveChild` followed by descendant-first `Delete`
+ordering, then benchmark the same 1,000-sibling workload without weakening existing paths.

@@ -46,3 +46,4 @@ All notable changes follow semantic versioning once a public API is released.
 - Added deterministic initial-mount reconciliation and immutable snapshots in Rust.
 - Added property-only incremental reconciliation with stable runtime identity preservation.
 - Added linear-time single-child keyed movement with deterministic identity preservation.
+- Added linear-time single-child keyed insertion with deterministic identity preservation.

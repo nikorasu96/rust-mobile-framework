@@ -73,7 +73,7 @@ impl Display for ReconcileError {
                 )
             }
             Self::StructuralChangeUnsupported => formatter.write_str(
-                "structural insert, removal, replacement or multiple-child reorder is not implemented",
+                "structural removal, replacement, multiple insertions or multiple-child reorder is not implemented",
             ),
             Self::InvariantViolation => formatter.write_str("reconciliation invariant violated"),
         }
@@ -211,6 +211,9 @@ impl CommitBuilder {
     ) -> Result<Vec<CommittedNode>, ReconcileError> {
         let previous = previous_parent.children();
         let candidate = candidate_parent.children();
+        if candidate.len() == previous.len().saturating_add(1) {
+            return self.reconcile_single_insertion(previous_parent, candidate_parent);
+        }
         if previous.len() != candidate.len() {
             return Err(ReconcileError::StructuralChangeUnsupported);
         }
@@ -240,6 +243,39 @@ impl CommitBuilder {
             });
             children.push(self.reconcile_node(&previous[previous_index], candidate_child)?);
         }
+        Ok(children)
+    }
+
+    fn reconcile_single_insertion(
+        &mut self,
+        previous_parent: &CommittedNode,
+        candidate_parent: &DeclarativeNode,
+    ) -> Result<Vec<CommittedNode>, ReconcileError> {
+        let previous = previous_parent.children();
+        let candidate = candidate_parent.children();
+        let insertion = detect_single_keyed_insertion(previous, candidate)
+            .ok_or(ReconcileError::StructuralChangeUnsupported)?;
+        let mut children = Vec::with_capacity(candidate.len());
+
+        for (candidate_index, candidate_child) in candidate.iter().enumerate() {
+            if candidate_index == insertion {
+                let child = self.create_subtree(candidate_child)?;
+                self.push(Mutation::InsertChild {
+                    parent_id: previous_parent.node_id(),
+                    child_id: child.node_id(),
+                    index: checked_index(candidate_index)?,
+                })?;
+                children.push(child);
+            } else {
+                let previous_index = if candidate_index < insertion {
+                    candidate_index
+                } else {
+                    candidate_index - 1
+                };
+                children.push(self.reconcile_node(&previous[previous_index], candidate_child)?);
+            }
+        }
+
         Ok(children)
     }
 
@@ -326,6 +362,41 @@ fn detect_single_keyed_move(
             })
     });
     moved_later.filter(|movement| single_move_matches(previous, candidate, *movement))
+}
+
+fn detect_single_keyed_insertion(
+    previous: &[CommittedNode],
+    candidate: &[DeclarativeNode],
+) -> Option<usize> {
+    if candidate.len() != previous.len().checked_add(1)? {
+        return None;
+    }
+
+    let mut previous_index = 0;
+    let mut candidate_index = 0;
+    let mut insertion = None;
+
+    while candidate_index < candidate.len() {
+        let keys_match = previous.get(previous_index).is_some_and(|previous_child| {
+            previous_child.key().is_some()
+                && previous_child.key() == candidate[candidate_index].key()
+        });
+        if keys_match {
+            previous_index += 1;
+            candidate_index += 1;
+        } else if insertion.is_none() && candidate[candidate_index].key().is_some() {
+            insertion = Some(candidate_index);
+            candidate_index += 1;
+        } else {
+            return None;
+        }
+    }
+
+    if previous_index == previous.len() {
+        insertion
+    } else {
+        None
+    }
 }
 
 fn single_move_matches(
