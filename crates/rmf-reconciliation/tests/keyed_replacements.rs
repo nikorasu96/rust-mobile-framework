@@ -75,7 +75,11 @@ fn replaces_a_keyed_child_when_its_kind_changes() {
 
 #[test]
 fn replaces_one_changed_key_without_changing_sibling_identities() {
-    let current = snapshot(&tree(vec![keyed_text("a"), keyed_text("b"), keyed_text("c")]));
+    let current = snapshot(&tree(vec![
+        keyed_text("a"),
+        keyed_text("b"),
+        keyed_text("c"),
+    ]));
     let candidate = tree(vec![keyed_text("a"), keyed_text("x"), keyed_text("c")]);
     let prepared = reconciler(40)
         .prepare(&current, &candidate)
@@ -108,10 +112,14 @@ fn replaces_nested_subtrees_in_delete_then_create_order() {
     assert!(matches!(operations[3], Mutation::Delete { node_id } if node_id.get() == 2));
     assert!(matches!(operations[4], Mutation::Create { node_id, .. } if node_id.get() == 4));
     assert!(matches!(operations[5], Mutation::Create { node_id, .. } if node_id.get() == 5));
-    assert!(matches!(operations[6], Mutation::InsertChild { parent_id, child_id, .. }
-        if parent_id.get() == 4 && child_id.get() == 5));
-    assert!(matches!(operations[7], Mutation::InsertChild { parent_id, child_id, .. }
-        if parent_id.get() == 1 && child_id.get() == 4));
+    assert!(
+        matches!(operations[6], Mutation::InsertChild { parent_id, child_id, .. }
+        if parent_id.get() == 4 && child_id.get() == 5)
+    );
+    assert!(
+        matches!(operations[7], Mutation::InsertChild { parent_id, child_id, .. }
+        if parent_id.get() == 1 && child_id.get() == 4)
+    );
 }
 
 #[test]
