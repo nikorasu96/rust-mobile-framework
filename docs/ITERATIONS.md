@@ -1598,7 +1598,20 @@ promotion, reducing TD-005 without introducing Android or JNI concerns into the 
 
 ### Validation evidence
 
-CI evidence and measured release metrics are recorded only after the pinned Rust workflow passes.
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Rust formatting and linting | Passed | Rust 1.85.0 fmt and strict Clippy with all targets/features |
+| Rust tests | Passed | 51 tests, including four runtime commit-application contracts |
+| Rust documentation | Passed | Workspace rustdoc with `-D warnings` |
+| Dependency architecture | Passed | Runtime depends inward on reconciliation; no cycle or adapter dependency |
+| Independent regressions | Passed | Architecture check and all 85 Python tests |
+| Release performance gate | Passed | 100 unchanged 1,000-sibling prepare-and-promote cycles plus existing budgets |
+
+[GitHub Actions run 36244158259](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36244158259)
+measured 107,406 ns average commit promotion, 102,582 ns keyed replacement, 103,251 ns
+removal, 102,716 ns insertion, 112,111 ns movement, 83,356 ns validation, 153,714 ns mount
+and a 1,007,899-byte frame. Every provisional budget passed. Python remains independent
+verification and contains no new runtime implementation.
 
 ### Next increment
 

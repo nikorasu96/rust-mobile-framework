@@ -75,6 +75,13 @@ pub enum CommitStatus {
 /// Typed commit-application failure without exposing candidate data.
 #[derive(Debug, Eq, PartialEq)]
 pub enum CommitError<E> {
+    /// A previous host call has not reached a classified result.
+    Busy {
+        /// Confirmed base revision of the in-flight batch.
+        base: Revision,
+        /// Target revision of the in-flight batch.
+        target: Revision,
+    },
     /// The prepared batch does not start at the confirmed revision.
     StaleBatch {
         /// Runtime's confirmed revision.
@@ -101,6 +108,12 @@ where
 {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Busy { base, target } => write!(
+                formatter,
+                "surface is applying revision {} from base {}",
+                target.get(),
+                base.get()
+            ),
             Self::StaleBatch {
                 confirmed,
                 batch_base,
@@ -165,15 +178,20 @@ where
     /// confirmed snapshot and remains ready. A possibly partial host failure blocks later commits.
     pub fn apply(&mut self, prepared: PreparedCommit) -> Result<(), CommitError<A::Error>> {
         let confirmed_revision = self.confirmed.revision();
-        if let CommitStatus::RecoveryRequired {
-            confirmed,
-            attempted,
-        } = self.status
-        {
-            return Err(CommitError::RecoveryRequired {
+        match self.status {
+            CommitStatus::Ready { .. } => {}
+            CommitStatus::Applying { base, target } => {
+                return Err(CommitError::Busy { base, target });
+            }
+            CommitStatus::RecoveryRequired {
                 confirmed,
                 attempted,
-            });
+            } => {
+                return Err(CommitError::RecoveryRequired {
+                    confirmed,
+                    attempted,
+                });
+            }
         }
 
         let base = prepared.batch().base_revision();
