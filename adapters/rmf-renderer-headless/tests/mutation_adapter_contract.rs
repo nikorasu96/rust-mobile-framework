@@ -189,3 +189,30 @@ fn applies_a_general_keyed_reorder_and_confirms_exact_host_order() {
     assert_eq!(coordinator.applier().revision(), 2);
     assert_eq!(coordinator.applier().node_count(), 5);
 }
+
+#[test]
+fn applies_multiple_keyed_insertions_and_confirms_exact_host_state() {
+    let reconciler = reconciler();
+    let mut coordinator = CommitCoordinator::new(HeadlessMutationAdapter::default());
+    apply_candidate(
+        &mut coordinator,
+        reconciler,
+        &candidate(vec![text("a", "A"), text("c", "C")]),
+    );
+
+    apply_candidate(
+        &mut coordinator,
+        reconciler,
+        &candidate(vec![
+            text("x", "X"),
+            text("a", "A"),
+            text("b", "B"),
+            text("c", "C"),
+            text("y", "Y"),
+        ]),
+    );
+
+    assert_eq!(coordinator.applier().revision(), 2);
+    assert_eq!(coordinator.applier().node_count(), 6);
+    assert_eq!(coordinator.applier().metrics().edges(), 5);
+}

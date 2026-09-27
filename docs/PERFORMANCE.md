@@ -25,6 +25,7 @@ cargo run --release -p rmf-bench
 | One keyed move, 1,000 siblings | <= 5 ms | Pure reconciliation, host release build |
 | Reverse 1,000 fully keyed siblings | <= 10 ms | General `O(n log n)` reorder planning |
 | One keyed insertion, 1,000 final siblings | <= 5 ms | Pure reconciliation, host release build |
+| 100 keyed insertions, 1,000 final siblings | <= 5 ms | Linear pure-insertion planning |
 | One keyed removal, 1,000 initial siblings | <= 5 ms | Pure reconciliation, host release build |
 | One keyed replacement, 1,000 siblings | <= 5 ms | Pure reconciliation, host release build |
 | Prepare and promote unchanged 1,000-sibling commit | <= 1 ms | Reconciliation plus no-op runtime port, host release build |
@@ -40,8 +41,9 @@ The language-independent oracle builds one key-to-index table per sibling list a
 one expected constant-time lookup for each keyed candidate. A deterministic regression
 reverses 2,048 keyed siblings and verifies that every existing identity is selected once.
 Production Rust gates exercise one last-to-first keyed movement, a full reverse-order keyed
-permutation, and one middle keyed insertion, removal and replacement across 1,000 siblings for
-100 preparations each. General reorder uses expected constant-time hash lookup without iterating
+permutation, one middle keyed insertion, 100 distributed keyed insertions, and one middle removal
+and replacement across 1,000 siblings for 100 preparations each. General reorder uses expected
+constant-time hash lookup without iterating
 the randomized map and a Fenwick order-statistics index, giving `O(n log n)` planning and `O(n)`
 temporary memory. The runtime gate also
 prepares and promotes 100 unchanged commits through a no-op batch adapter after initial mount.

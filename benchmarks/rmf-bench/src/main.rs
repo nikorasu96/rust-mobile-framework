@@ -20,6 +20,7 @@ const COMMITTED_MOUNT_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_MOVE_BUDGET: Duration = Duration::from_millis(5);
 const GENERAL_KEYED_REORDER_BUDGET: Duration = Duration::from_millis(10);
 const KEYED_INSERTION_BUDGET: Duration = Duration::from_millis(5);
+const MULTIPLE_KEYED_INSERTION_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_REMOVAL_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_REPLACEMENT_BUDGET: Duration = Duration::from_millis(5);
 const COMMIT_PROMOTION_BUDGET: Duration = Duration::from_millis(1);
@@ -27,15 +28,7 @@ const COMMIT_PROMOTION_BUDGET: Duration = Duration::from_millis(1);
 fn main() -> Result<(), Box<dyn Error>> {
     let candidate_root = build_keyed_sibling_root(NODE_COUNT, false);
 
-    let validation_started = Instant::now();
-    for _ in 0..ITERATIONS {
-        let validated = ValidatedTree::new(
-            black_box(candidate_root.clone()),
-            CandidateLimits::default(),
-        )?;
-        black_box(validated);
-    }
-    let validation_average = validation_started.elapsed() / ITERATIONS;
+    let validation_average = measure_candidate_validation(&candidate_root)?;
 
     let candidate = ValidatedTree::new(candidate_root, CandidateLimits::default())?;
     let reconciler = Reconciler::new(ReconcileLimits::new(3_000)?);
@@ -61,6 +54,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let general_keyed_reorder_average = measure_general_keyed_reorder(reconciler)?;
 
     let keyed_insertion_average = measure_keyed_insertion(reconciler)?;
+    let multiple_keyed_insertion_average = measure_multiple_keyed_insertions(reconciler)?;
     let keyed_removal_average = measure_keyed_removal(reconciler)?;
 
     let keyed_replacement_average = measure_keyed_replacement(reconciler)?;
@@ -79,6 +73,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "keyed_insertion_average_ns={}",
         keyed_insertion_average.as_nanos()
     );
+    report_multiple_keyed_insertions(multiple_keyed_insertion_average)?;
     println!(
         "keyed_removal_average_ns={}",
         keyed_removal_average.as_nanos()
@@ -138,6 +133,18 @@ fn print_general_keyed_reorder(average: Duration) {
     println!("general_keyed_reorder_average_ns={}", average.as_nanos());
 }
 
+fn report_multiple_keyed_insertions(average: Duration) -> Result<(), BudgetExceeded> {
+    println!(
+        "multiple_keyed_insertions_average_ns={}",
+        average.as_nanos()
+    );
+    enforce_budget(
+        "multiple keyed insertions average",
+        average,
+        MULTIPLE_KEYED_INSERTION_BUDGET,
+    )
+}
+
 fn validate_host_metrics(nodes: usize, edges: usize) -> Result<(), UnexpectedHostMetrics> {
     if nodes == NODE_COUNT + 1 && edges == NODE_COUNT {
         Ok(())
@@ -190,12 +197,40 @@ fn measure_commit_promotion() -> Result<Duration, Box<dyn Error>> {
     Ok(started.elapsed() / ITERATIONS)
 }
 
+fn measure_candidate_validation(
+    candidate_root: &DeclarativeNode,
+) -> Result<Duration, Box<dyn Error>> {
+    let started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let validated = ValidatedTree::new(
+            black_box(candidate_root.clone()),
+            CandidateLimits::default(),
+        )?;
+        black_box(validated);
+    }
+    Ok(started.elapsed() / ITERATIONS)
+}
+
 fn measure_keyed_insertion(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {
     let base = build_keyed_insertion_tree(NODE_COUNT, false)?;
     let snapshot = reconciler
         .prepare(&SurfaceSnapshot::empty(), &base)?
         .into_snapshot();
     let candidate = build_keyed_insertion_tree(NODE_COUNT, true)?;
+    let started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared = reconciler.prepare(black_box(&snapshot), black_box(&candidate))?;
+        black_box(prepared);
+    }
+    Ok(started.elapsed() / ITERATIONS)
+}
+
+fn measure_multiple_keyed_insertions(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {
+    let base = build_multiple_keyed_insertion_tree(NODE_COUNT, false)?;
+    let snapshot = reconciler
+        .prepare(&SurfaceSnapshot::empty(), &base)?
+        .into_snapshot();
+    let candidate = build_multiple_keyed_insertion_tree(NODE_COUNT, true)?;
     let started = Instant::now();
     for _ in 0..ITERATIONS {
         let prepared = reconciler.prepare(black_box(&snapshot), black_box(&candidate))?;
@@ -301,6 +336,36 @@ fn build_keyed_insertion_tree(
     let mut keys: Vec<usize> = (0..existing_count).collect();
     if include_inserted_child {
         keys.insert(final_child_count / 2, existing_count);
+    }
+    let children = keys
+        .into_iter()
+        .map(|index| {
+            DeclarativeNode::new(
+                ComponentKind::Text,
+                Some(Key::new(index.to_string())),
+                PropertySet::empty(),
+                vec![],
+            )
+        })
+        .collect();
+    let root = DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), children);
+    Ok(ValidatedTree::new(root, CandidateLimits::default())?)
+}
+
+fn build_multiple_keyed_insertion_tree(
+    final_child_count: usize,
+    include_inserted_children: bool,
+) -> Result<ValidatedTree, Box<dyn Error>> {
+    const INSERTED_CHILDREN: usize = 100;
+    const INSERTION_INTERVAL: usize = 9;
+
+    let existing_count = final_child_count.saturating_sub(INSERTED_CHILDREN);
+    let mut keys = Vec::with_capacity(final_child_count);
+    for index in 0..existing_count {
+        if include_inserted_children && index % INSERTION_INTERVAL == 0 {
+            keys.push(existing_count + index / INSERTION_INTERVAL);
+        }
+        keys.push(index);
     }
     let children = keys
         .into_iter()

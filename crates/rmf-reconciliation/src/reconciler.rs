@@ -74,7 +74,7 @@ impl Display for ReconcileError {
                 )
             }
             Self::StructuralChangeUnsupported => formatter.write_str(
-                "multiple keyed insertions, removals or replacements and unkeyed structural changes are not implemented",
+                "multiple keyed removals or replacements, mixed keyed changes and unkeyed structural changes are not implemented",
             ),
             Self::InvariantViolation => formatter.write_str("reconciliation invariant violated"),
         }
@@ -212,8 +212,8 @@ impl CommitBuilder {
     ) -> Result<Vec<CommittedNode>, ReconcileError> {
         let previous = previous_parent.children();
         let candidate = candidate_parent.children();
-        if candidate.len() == previous.len().saturating_add(1) {
-            return self.reconcile_single_insertion(previous_parent, candidate_parent);
+        if candidate.len() > previous.len() {
+            return self.reconcile_keyed_insertions(previous_parent, candidate_parent);
         }
         if previous.len() == candidate.len().saturating_add(1) {
             return self.reconcile_single_removal(previous_parent, candidate_parent);
@@ -297,34 +297,32 @@ impl CommitBuilder {
         Ok(children)
     }
 
-    fn reconcile_single_insertion(
+    fn reconcile_keyed_insertions(
         &mut self,
         previous_parent: &CommittedNode,
         candidate_parent: &DeclarativeNode,
     ) -> Result<Vec<CommittedNode>, ReconcileError> {
         let previous = previous_parent.children();
         let candidate = candidate_parent.children();
-        let insertion = detect_single_keyed_insertion(previous, candidate)
+        let matches = plan_keyed_insertions(previous, candidate)
             .ok_or(ReconcileError::StructuralChangeUnsupported)?;
         let mut children = Vec::with_capacity(candidate.len());
 
-        for (candidate_index, candidate_child) in candidate.iter().enumerate() {
-            if candidate_index == insertion {
-                let child = self.create_subtree(candidate_child)?;
-                self.push(Mutation::InsertChild {
-                    parent_id: previous_parent.node_id(),
-                    child_id: child.node_id(),
-                    index: checked_index(candidate_index)?,
-                })?;
-                children.push(child);
-            } else {
-                let previous_index = if candidate_index < insertion {
-                    candidate_index
-                } else {
-                    candidate_index - 1
-                };
+        for (candidate_index, (candidate_child, previous_index)) in
+            candidate.iter().zip(matches).enumerate()
+        {
+            if let Some(previous_index) = previous_index {
                 children.push(self.reconcile_node(&previous[previous_index], candidate_child)?);
+                continue;
             }
+
+            let child = self.create_subtree(candidate_child)?;
+            self.push(Mutation::InsertChild {
+                parent_id: previous_parent.node_id(),
+                child_id: child.node_id(),
+                index: checked_index(candidate_index)?,
+            })?;
+            children.push(child);
         }
 
         Ok(children)
@@ -559,36 +557,32 @@ fn plan_keyed_reorder(
     })
 }
 
-fn detect_single_keyed_insertion(
+fn plan_keyed_insertions(
     previous: &[CommittedNode],
     candidate: &[DeclarativeNode],
-) -> Option<usize> {
-    if candidate.len() != previous.len().checked_add(1)? {
+) -> Option<Vec<Option<usize>>> {
+    if candidate.len() <= previous.len() {
         return None;
     }
 
     let mut previous_index = 0;
-    let mut candidate_index = 0;
-    let mut insertion = None;
-
-    while candidate_index < candidate.len() {
-        let keys_match = previous.get(previous_index).is_some_and(|previous_child| {
-            previous_child.key().is_some()
-                && previous_child.key() == candidate[candidate_index].key()
+    let mut matches = Vec::with_capacity(candidate.len());
+    for candidate_child in candidate {
+        let candidate_key = candidate_child.key()?;
+        let matching_previous = previous.get(previous_index).is_some_and(|previous_child| {
+            previous_child.key() == Some(candidate_key)
+                && previous_child.kind() == candidate_child.kind()
         });
-        if keys_match {
+        if matching_previous {
+            matches.push(Some(previous_index));
             previous_index += 1;
-            candidate_index += 1;
-        } else if insertion.is_none() && candidate[candidate_index].key().is_some() {
-            insertion = Some(candidate_index);
-            candidate_index += 1;
         } else {
-            return None;
+            matches.push(None);
         }
     }
 
     if previous_index == previous.len() {
-        insertion
+        Some(matches)
     } else {
         None
     }

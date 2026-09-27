@@ -1,4 +1,4 @@
-//! Public contracts for deterministic single-child keyed insertion.
+//! Public contracts for deterministic pure keyed insertion.
 
 use rmf_core::candidate::{
     CandidateLimits, ComponentKind, DeclarativeNode, Key, PropertySet, ValidatedTree,
@@ -91,6 +91,46 @@ fn appends_one_keyed_child_deterministically() {
 }
 
 #[test]
+fn inserts_multiple_keyed_children_in_candidate_order() {
+    let current = initial_snapshot(&["a", "c"]);
+    let prepared = reconciler(20)
+        .prepare(&current, &tree(&["x", "a", "b", "c", "y"]))
+        .unwrap_or_else(|error| unreachable!("pure keyed insertions must prepare: {error}"));
+
+    assert!(matches!(
+        prepared.batch().operations(),
+        [
+            Mutation::Create { node_id: first, .. },
+            Mutation::InsertChild { child_id: first_child, index: first_index, .. },
+            Mutation::Create { node_id: second, .. },
+            Mutation::InsertChild { child_id: second_child, index: second_index, .. },
+            Mutation::Create { node_id: third, .. },
+            Mutation::InsertChild { child_id: third_child, index: third_index, .. },
+        ] if first.get() == 4
+            && *first_child == *first
+            && first_index.get() == 0
+            && second.get() == 5
+            && *second_child == *second
+            && second_index.get() == 2
+            && third.get() == 6
+            && *third_child == *third
+            && third_index.get() == 4
+    ));
+    assert_eq!(child_ids(&prepared.into_snapshot()), [4, 2, 5, 3, 6]);
+}
+
+#[test]
+fn rejects_insertion_mixed_with_reorder() {
+    let current = initial_snapshot(&["a", "b"]);
+
+    assert_eq!(
+        reconciler(20).prepare(&current, &tree(&["b", "x", "a"])),
+        Err(ReconcileError::StructuralChangeUnsupported)
+    );
+    assert_eq!(child_ids(&current), [2, 3]);
+}
+
+#[test]
 fn rejects_an_unkeyed_insertion_as_ambiguous() {
     let current = reconciler(20)
         .prepare(&SurfaceSnapshot::empty(), &unkeyed_tree(2))
@@ -113,6 +153,19 @@ fn operation_limit_rejects_insertion_without_publishing_partial_state() {
     assert_eq!(
         reconciler(1).prepare(&current, &tree(&["a", "b", "c"])),
         Err(ReconcileError::OperationLimitExceeded { limit: 1 })
+    );
+    assert_eq!(current.revision().get(), 1);
+    assert_eq!(child_ids(&current), before_ids);
+}
+
+#[test]
+fn operation_limit_rejects_multiple_insertions_atomically() {
+    let current = initial_snapshot(&["a", "c"]);
+    let before_ids = child_ids(&current);
+
+    assert_eq!(
+        reconciler(3).prepare(&current, &tree(&["x", "a", "b", "c"])),
+        Err(ReconcileError::OperationLimitExceeded { limit: 3 })
     );
     assert_eq!(current.revision().get(), 1);
     assert_eq!(child_ids(&current), before_ids);

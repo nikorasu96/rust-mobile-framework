@@ -24,6 +24,7 @@
 - [x] Implement and benchmark deterministic single-child keyed movement in Rust.
 - [x] Implement and benchmark deterministic general keyed sibling reordering in Rust.
 - [x] Implement and benchmark deterministic single-child keyed insertion in Rust.
+- [x] Implement and benchmark deterministic pure keyed multi-insertion in Rust.
 - [x] Implement and benchmark deterministic single-child keyed removal in Rust.
 - [x] Implement and benchmark deterministic single-child keyed replacement in Rust.
 - [x] Specify commit application, promotion and full-remount recovery semantics.
