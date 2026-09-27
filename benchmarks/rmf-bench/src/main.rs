@@ -140,7 +140,7 @@ fn print_general_keyed_reorder(average: Duration) {
     println!("general_keyed_reorder_average_ns={}", average.as_nanos());
 }
 
-fn enforce_general_keyed_reorder(average: Duration) -> Result<(), Box<dyn Error>> {
+fn enforce_general_keyed_reorder(average: Duration) -> Result<(), BudgetExceeded> {
     enforce_budget(
         "general keyed reorder average",
         average,
