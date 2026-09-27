@@ -225,9 +225,7 @@ fn measure_keyed_insertion(reconciler: Reconciler) -> Result<Duration, Box<dyn E
     Ok(started.elapsed() / ITERATIONS)
 }
 
-fn measure_multiple_keyed_insertions(
-    reconciler: Reconciler,
-) -> Result<Duration, Box<dyn Error>> {
+fn measure_multiple_keyed_insertions(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {
     let base = build_multiple_keyed_insertion_tree(NODE_COUNT, false)?;
     let snapshot = reconciler
         .prepare(&SurfaceSnapshot::empty(), &base)?
