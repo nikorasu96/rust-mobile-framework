@@ -1,7 +1,7 @@
 # Increment 49: General keyed sibling reorder
 
 - Date: 2026-09-26
-- Status: Pending repository CI
+- Status: Complete
 
 ## Acceptance criteria
 
@@ -27,7 +27,17 @@ candidate order; it never observes map iteration order.
 
 ## Validation evidence
 
-Repository CI evidence will be recorded before this increment is merged.
+GitHub Actions run
+[`36282024819`](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36282024819)
+passed with the pinned Rust 1.85 toolchain:
+
+- `cargo fmt --all --check`
+- workspace Clippy with warnings denied
+- 54 Rust tests
+- workspace rustdoc with warnings denied
+- architecture policy and 85 independent contract regressions
+- release performance gate: 179,340 ns average for a full 1,000-sibling reversal
+  (10,000,000 ns budget)
 
 ## Remaining limitations
 
