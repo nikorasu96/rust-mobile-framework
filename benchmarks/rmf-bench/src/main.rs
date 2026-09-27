@@ -24,6 +24,7 @@ const MULTIPLE_KEYED_INSERTION_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_REMOVAL_BUDGET: Duration = Duration::from_millis(5);
 const MULTIPLE_KEYED_REMOVAL_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_REPLACEMENT_BUDGET: Duration = Duration::from_millis(5);
+const MULTIPLE_KEYED_REPLACEMENT_BUDGET: Duration = Duration::from_millis(5);
 const COMMIT_PROMOTION_BUDGET: Duration = Duration::from_millis(1);
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -50,6 +51,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let multiple_keyed_removal_average = measure_multiple_keyed_removals(reconciler)?;
 
     let keyed_replacement_average = measure_keyed_replacement(reconciler)?;
+    let multiple_keyed_replacement_average = measure_multiple_keyed_replacements(reconciler)?;
     let commit_promotion_average = measure_commit_promotion()?;
 
     println!("nodes={NODE_COUNT}");
@@ -75,6 +77,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "keyed_replacement_average_ns={}",
         keyed_replacement_average.as_nanos()
     );
+    report_multiple_keyed_replacements(multiple_keyed_replacement_average)?;
     println!(
         "commit_promotion_average_ns={}",
         commit_promotion_average.as_nanos()
@@ -144,6 +147,18 @@ fn report_multiple_keyed_removals(average: Duration) -> Result<(), BudgetExceede
         "multiple keyed removals average",
         average,
         MULTIPLE_KEYED_REMOVAL_BUDGET,
+    )
+}
+
+fn report_multiple_keyed_replacements(average: Duration) -> Result<(), BudgetExceeded> {
+    println!(
+        "multiple_keyed_replacements_average_ns={}",
+        average.as_nanos()
+    );
+    enforce_budget(
+        "multiple keyed replacements average",
+        average,
+        MULTIPLE_KEYED_REPLACEMENT_BUDGET,
     )
 }
 
@@ -311,6 +326,20 @@ fn measure_keyed_replacement(reconciler: Reconciler) -> Result<Duration, Box<dyn
     Ok(started.elapsed() / ITERATIONS)
 }
 
+fn measure_multiple_keyed_replacements(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {
+    let base = build_multiple_keyed_replacement_tree(NODE_COUNT, false)?;
+    let snapshot = reconciler
+        .prepare(&SurfaceSnapshot::empty(), &base)?
+        .into_snapshot();
+    let candidate = build_multiple_keyed_replacement_tree(NODE_COUNT, true)?;
+    let started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared = reconciler.prepare(black_box(&snapshot), black_box(&candidate))?;
+        black_box(prepared);
+    }
+    Ok(started.elapsed() / ITERATIONS)
+}
+
 fn build_keyed_replacement_tree(
     child_count: usize,
     replace_middle_child: bool,
@@ -319,6 +348,31 @@ fn build_keyed_replacement_tree(
     let children = (0..child_count)
         .map(|index| {
             let kind = if replace_middle_child && index == replacement_index {
+                ComponentKind::View
+            } else {
+                ComponentKind::Text
+            };
+            DeclarativeNode::new(
+                kind,
+                Some(Key::new(index.to_string())),
+                PropertySet::empty(),
+                vec![],
+            )
+        })
+        .collect();
+    let root = DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), children);
+    Ok(ValidatedTree::new(root, CandidateLimits::default())?)
+}
+
+fn build_multiple_keyed_replacement_tree(
+    child_count: usize,
+    replace_children: bool,
+) -> Result<ValidatedTree, Box<dyn Error>> {
+    const REPLACEMENT_INTERVAL: usize = 10;
+
+    let children = (0..child_count)
+        .map(|index| {
+            let kind = if replace_children && index % REPLACEMENT_INTERVAL == 0 {
                 ComponentKind::View
             } else {
                 ComponentKind::Text
