@@ -1,7 +1,7 @@
 # Increment 51: Multiple keyed removals
 
 - Date: 2026-09-26
-- Status: Validation pending
+- Status: Complete
 
 ## Acceptance criteria
 
@@ -29,7 +29,17 @@ is `O(n + m)` and its result does not depend on hashing or unordered iteration.
 
 ## Validation evidence
 
-Pending pinned Rust 1.85 CI validation.
+GitHub Actions run
+[`36296153729`](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36296153729)
+passed with the pinned Rust 1.85 toolchain:
+
+- `cargo fmt --all --check`
+- workspace Clippy with warnings denied
+- 62 Rust tests
+- workspace rustdoc with warnings denied
+- architecture policy and 85 independent contract regressions
+- release performance gate: 101,600 ns average for 100 distributed removals from 1,000 initial
+  siblings (5,000,000 ns budget)
 
 ## Remaining limitations
 
