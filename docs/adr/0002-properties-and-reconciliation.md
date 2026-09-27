@@ -92,6 +92,8 @@ A batch is immutable and topologically ordered:
 3. Removals occur before deletion; descendants are deleted before ancestors.
 4. No operation references an ID absent from either the base tree or an earlier create.
 5. Applying the same batch twice is rejected by its base revision, not silently repeated.
+6. Pure keyed insertions are emitted in candidate order as `Create`/`InsertChild` groups; existing
+   keyed siblings retain identity and relative order.
 
 An adapter validates the complete batch and base revision before touching host views.
 Logical publication is atomic. Native UI toolkits are not assumed to provide rollback;
@@ -110,7 +112,8 @@ never be reported as a committed revision.
 
 ### 7. Complexity and defensive limits
 
-Keyed sibling identity matching targets expected `O(n)` time using a temporary index. General
+Keyed sibling identity matching targets expected `O(n)` time using a temporary index. Pure keyed
+insertion planning is `O(n + m)` for the previous and candidate sibling counts. General
 move-position planning may use `O(n log n)` time and `O(n)` temporary memory through explicit
 order statistics. Unkeyed matching is linear by position. Implementations must not contain an
 accidental quadratic sibling scan.
