@@ -74,10 +74,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
     println!("committed_mount_average_ns={}", mount_average.as_nanos());
     println!("keyed_move_average_ns={}", keyed_move_average.as_nanos());
-    println!(
-        "general_keyed_reorder_average_ns={}",
-        general_keyed_reorder_average.as_nanos()
-    );
+    print_general_keyed_reorder(general_keyed_reorder_average);
     println!(
         "keyed_insertion_average_ns={}",
         keyed_insertion_average.as_nanos()
@@ -110,11 +107,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         COMMITTED_MOUNT_BUDGET,
     )?;
     enforce_budget("keyed move average", keyed_move_average, KEYED_MOVE_BUDGET)?;
-    enforce_budget(
-        "general keyed reorder average",
-        general_keyed_reorder_average,
-        GENERAL_KEYED_REORDER_BUDGET,
-    )?;
+    enforce_general_keyed_reorder(general_keyed_reorder_average)?;
     enforce_budget(
         "keyed insertion average",
         keyed_insertion_average,
@@ -141,6 +134,18 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("budget_status=passed");
     Ok(())
+}
+
+fn print_general_keyed_reorder(average: Duration) {
+    println!("general_keyed_reorder_average_ns={}", average.as_nanos());
+}
+
+fn enforce_general_keyed_reorder(average: Duration) -> Result<(), Box<dyn Error>> {
+    enforce_budget(
+        "general keyed reorder average",
+        average,
+        GENERAL_KEYED_REORDER_BUDGET,
+    )
 }
 
 fn mount_candidate(
