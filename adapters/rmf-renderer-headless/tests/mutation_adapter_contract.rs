@@ -159,3 +159,33 @@ fn remount_replaces_host_state_with_the_exact_confirmed_snapshot() {
     assert_eq!(adapter.revision(), 1);
     assert_eq!(adapter.node_count(), 3);
 }
+
+#[test]
+fn applies_a_general_keyed_reorder_and_confirms_exact_host_order() {
+    let reconciler = reconciler();
+    let mut coordinator = CommitCoordinator::new(HeadlessMutationAdapter::default());
+    apply_candidate(
+        &mut coordinator,
+        reconciler,
+        &candidate(vec![
+            text("a", "A"),
+            text("b", "B"),
+            text("c", "C"),
+            text("d", "D"),
+        ]),
+    );
+
+    apply_candidate(
+        &mut coordinator,
+        reconciler,
+        &candidate(vec![
+            text("c", "C"),
+            text("d", "D"),
+            text("a", "A"),
+            text("b", "B"),
+        ]),
+    );
+
+    assert_eq!(coordinator.applier().revision(), 2);
+    assert_eq!(coordinator.applier().node_count(), 5);
+}

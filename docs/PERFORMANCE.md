@@ -23,6 +23,7 @@ cargo run --release -p rmf-bench
 | Candidate validation average, 1,001 nodes | <= 1 ms | Host release build |
 | Confirmed headless mount average, 1,001 nodes | <= 5 ms | Reconciliation plus atomic host application |
 | One keyed move, 1,000 siblings | <= 5 ms | Pure reconciliation, host release build |
+| Reverse 1,000 fully keyed siblings | <= 10 ms | General `O(n log n)` reorder planning |
 | One keyed insertion, 1,000 final siblings | <= 5 ms | Pure reconciliation, host release build |
 | One keyed removal, 1,000 initial siblings | <= 5 ms | Pure reconciliation, host release build |
 | One keyed replacement, 1,000 siblings | <= 5 ms | Pure reconciliation, host release build |
@@ -38,13 +39,15 @@ averages must not be presented as tail latency.
 The language-independent oracle builds one key-to-index table per sibling list and uses
 one expected constant-time lookup for each keyed candidate. A deterministic regression
 reverses 2,048 keyed siblings and verifies that every existing identity is selected once.
-Production Rust gates exercise one last-to-first keyed movement and one middle keyed insertion,
-removal and replacement across 1,000 siblings for 100 preparations each. The runtime gate also
+Production Rust gates exercise one last-to-first keyed movement, a full reverse-order keyed
+permutation, and one middle keyed insertion, removal and replacement across 1,000 siblings for
+100 preparations each. General reorder uses expected constant-time hash lookup without iterating
+the randomized map and a Fenwick order-statistics index, giving `O(n log n)` planning and `O(n)`
+temporary memory. The runtime gate also
 prepares and promotes 100 unchanged commits through a no-op batch adapter after initial mount.
 The committed-mount workload separately validates the real headless host's revision, node and
 edge counts so a fast but incomplete mutation application fails the gate.
-These averages guard
-against accidental quadratic work; they are not tail-latency claims or general reorder evidence.
+These averages guard against accidental quadratic work; they are not tail-latency claims.
 
 ## Rules
 

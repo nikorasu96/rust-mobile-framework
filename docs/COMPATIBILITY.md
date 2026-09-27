@@ -8,7 +8,7 @@ This file records observed capability, not branding or claimed drop-in compatibi
 | Declarative candidate validation | Rust implementation | `rmf-core::candidate`, typed schema, defensive-limit tests and headless composition root | No TypeScript facade or Android integration |
 | Initial tree reconciliation | Rust implementation | `rmf-reconciliation` initial-mount contract tests | No runtime host application |
 | Stable-tree property updates | Rust implementation | identity-preservation, set/remove and atomic-rejection Rust tests | No general multi-change reconciliation |
-| Keyed child reorder | Partial Rust implementation | single-move identity, direction and atomic multi-move rejection tests | One move per sibling list; no general reorder |
+| Keyed child reorder | Rust implementation | single/general move identity, determinism, operation-limit and exact headless-host contracts | Fully keyed compatible siblings only; no mixed insert/remove or unkeyed reorder |
 | Keyed child insertion | Partial Rust implementation | middle/append identity and atomic-limit Rust tests | One keyed insertion per sibling list; no unkeyed or multiple insertion |
 | Keyed child removal | Partial Rust implementation | identity, subtree ordering and atomic-limit Rust tests | One keyed removal per sibling list; no unkeyed or multiple removal |
 | Keyed child replacement | Partial Rust implementation | kind/key replacement, fresh identity, ordering and atomic-limit Rust tests | One keyed replacement per sibling list; no unkeyed or multiple replacement |
@@ -24,7 +24,7 @@ This file records observed capability, not branding or claimed drop-in compatibi
 | Deterministic headless host | Rust implementation | atomic mutation/remount adapter, logical host metrics, Rust contracts, executable example and committed-path benchmark | Diagnostic host only; not visual rendering |
 | Android rendering | Not started | — | No JNI/Kotlin layer |
 | TypeScript/React API | Not started | — | No JS engine or bindings |
-| Reconciliation | Partial Rust implementation | ADR-0002, compiled initial/property/move/insertion/removal/replacement contracts, runtime batch application and recovery, thirty-one v1 fixtures and 200 generated transitions | No multiple structural changes or general reorder |
+| Reconciliation | Partial Rust implementation | ADR-0002, compiled initial/property/general-reorder/insertion/removal/replacement contracts, runtime batch application and recovery, thirty-one v1 fixtures and 200 generated transitions | No multiple insertions, removals, replacements or mixed structural changes |
 | Typed properties | Rust implementation | Versioned `View`/`Text` schema, candidate validation and reconciliation contracts | Initial schema remains intentionally small |
 | Layout and styling | Not started | — | No layout engine |
 | Events and accessibility | Contract seed | Typed `CLICK` FFI body with node identity and sequence | No listener, native dispatch, accessibility semantics or state integration |

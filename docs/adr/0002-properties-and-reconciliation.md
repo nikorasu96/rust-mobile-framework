@@ -110,9 +110,10 @@ never be reported as a committed revision.
 
 ### 7. Complexity and defensive limits
 
-Keyed sibling matching targets expected `O(n)` time using a temporary index. Unkeyed
-matching is linear by position. The first implementation must not contain an accidental
-quadratic sibling scan.
+Keyed sibling identity matching targets expected `O(n)` time using a temporary index. General
+move-position planning may use `O(n log n)` time and `O(n)` temporary memory through explicit
+order statistics. Unkeyed matching is linear by position. Implementations must not contain an
+accidental quadratic sibling scan.
 
 Every surface configuration defines limits for node count, depth, children per node,
 properties per node, string bytes and total batch operations. Limit violations are typed

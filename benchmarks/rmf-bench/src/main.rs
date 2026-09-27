@@ -18,6 +18,7 @@ const ITERATIONS: u32 = 100;
 const CANDIDATE_VALIDATION_BUDGET: Duration = Duration::from_millis(1);
 const COMMITTED_MOUNT_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_MOVE_BUDGET: Duration = Duration::from_millis(5);
+const GENERAL_KEYED_REORDER_BUDGET: Duration = Duration::from_millis(10);
 const KEYED_INSERTION_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_REMOVAL_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_REPLACEMENT_BUDGET: Duration = Duration::from_millis(5);
@@ -57,6 +58,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         black_box(prepared);
     }
     let keyed_move_average = keyed_move_started.elapsed() / ITERATIONS;
+    let general_keyed_reorder_average = measure_general_keyed_reorder(reconciler)?;
 
     let keyed_insertion_average = measure_keyed_insertion(reconciler)?;
     let keyed_removal_average = measure_keyed_removal(reconciler)?;
@@ -72,6 +74,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
     println!("committed_mount_average_ns={}", mount_average.as_nanos());
     println!("keyed_move_average_ns={}", keyed_move_average.as_nanos());
+    println!(
+        "general_keyed_reorder_average_ns={}",
+        general_keyed_reorder_average.as_nanos()
+    );
     println!(
         "keyed_insertion_average_ns={}",
         keyed_insertion_average.as_nanos()
@@ -104,6 +110,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         COMMITTED_MOUNT_BUDGET,
     )?;
     enforce_budget("keyed move average", keyed_move_average, KEYED_MOVE_BUDGET)?;
+    enforce_budget(
+        "general keyed reorder average",
+        general_keyed_reorder_average,
+        GENERAL_KEYED_REORDER_BUDGET,
+    )?;
     enforce_budget(
         "keyed insertion average",
         keyed_insertion_average,
@@ -174,6 +185,20 @@ fn measure_keyed_insertion(reconciler: Reconciler) -> Result<Duration, Box<dyn E
         .prepare(&SurfaceSnapshot::empty(), &base)?
         .into_snapshot();
     let candidate = build_keyed_insertion_tree(NODE_COUNT, true)?;
+    let started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared = reconciler.prepare(black_box(&snapshot), black_box(&candidate))?;
+        black_box(prepared);
+    }
+    Ok(started.elapsed() / ITERATIONS)
+}
+
+fn measure_general_keyed_reorder(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {
+    let base = build_keyed_sibling_tree(NODE_COUNT, false)?;
+    let snapshot = reconciler
+        .prepare(&SurfaceSnapshot::empty(), &base)?
+        .into_snapshot();
+    let candidate = build_reversed_keyed_sibling_tree(NODE_COUNT)?;
     let started = Instant::now();
     for _ in 0..ITERATIONS {
         let prepared = reconciler.prepare(black_box(&snapshot), black_box(&candidate))?;
@@ -286,6 +311,24 @@ fn build_keyed_sibling_tree(
     move_last_to_front: bool,
 ) -> Result<ValidatedTree, Box<dyn Error>> {
     let root = build_keyed_sibling_root(child_count, move_last_to_front);
+    Ok(ValidatedTree::new(root, CandidateLimits::default())?)
+}
+
+fn build_reversed_keyed_sibling_tree(
+    child_count: usize,
+) -> Result<ValidatedTree, Box<dyn Error>> {
+    let children = (0..child_count)
+        .rev()
+        .map(|index| {
+            DeclarativeNode::new(
+                ComponentKind::Text,
+                Some(Key::new(index.to_string())),
+                PropertySet::empty(),
+                vec![],
+            )
+        })
+        .collect();
+    let root = DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), children);
     Ok(ValidatedTree::new(root, CandidateLimits::default())?)
 }
 
