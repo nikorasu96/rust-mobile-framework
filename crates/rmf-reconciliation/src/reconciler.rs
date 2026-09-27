@@ -597,10 +597,12 @@ fn plan_keyed_removals(
     let mut matches = Vec::with_capacity(previous.len());
     for previous_child in previous {
         let previous_key = previous_child.key()?;
-        let matching_candidate = candidate.get(candidate_index).is_some_and(|candidate_child| {
-            candidate_child.key() == Some(previous_key)
-                && candidate_child.kind() == previous_child.kind()
-        });
+        let matching_candidate = candidate
+            .get(candidate_index)
+            .is_some_and(|candidate_child| {
+                candidate_child.key() == Some(previous_key)
+                    && candidate_child.kind() == previous_child.kind()
+            });
         if matching_candidate {
             matches.push(Some(candidate_index));
             candidate_index += 1;
