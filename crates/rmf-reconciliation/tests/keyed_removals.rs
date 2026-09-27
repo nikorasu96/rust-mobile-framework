@@ -1,4 +1,4 @@
-//! Public contracts for deterministic single-child keyed removal.
+//! Public contracts for deterministic pure keyed removal.
 
 use rmf_core::candidate::{
     CandidateLimits, ComponentKind, DeclarativeNode, Key, PropertySet, ValidatedTree,
@@ -109,6 +109,46 @@ fn removes_a_subtree_in_detach_then_descendant_first_order() {
 }
 
 #[test]
+fn removes_multiple_keyed_children_at_live_indices() {
+    let current = snapshot(&keyed_tree(&["a", "b", "c", "d", "e"]));
+    let prepared = reconciler(30)
+        .prepare(&current, &keyed_tree(&["b", "d"]))
+        .unwrap_or_else(|error| unreachable!("pure keyed removals must prepare: {error}"));
+
+    assert!(matches!(
+        prepared.batch().operations(),
+        [
+            Mutation::RemoveChild { child_id: first, index: first_index, .. },
+            Mutation::Delete { node_id: first_deleted },
+            Mutation::RemoveChild { child_id: second, index: second_index, .. },
+            Mutation::Delete { node_id: second_deleted },
+            Mutation::RemoveChild { child_id: third, index: third_index, .. },
+            Mutation::Delete { node_id: third_deleted },
+        ] if first.get() == 2
+            && first_index.get() == 0
+            && *first_deleted == *first
+            && second.get() == 4
+            && second_index.get() == 1
+            && *second_deleted == *second
+            && third.get() == 6
+            && third_index.get() == 2
+            && *third_deleted == *third
+    ));
+    assert_eq!(child_ids(&prepared.into_snapshot()), [3, 5]);
+}
+
+#[test]
+fn rejects_removal_mixed_with_insertion() {
+    let current = snapshot(&keyed_tree(&["a", "b", "c"]));
+
+    assert_eq!(
+        reconciler(30).prepare(&current, &keyed_tree(&["a", "x"])),
+        Err(ReconcileError::StructuralChangeUnsupported)
+    );
+    assert_eq!(child_ids(&current), [2, 3, 4]);
+}
+
+#[test]
 fn rejects_an_unkeyed_removal_as_ambiguous() {
     let current = snapshot(&unkeyed_tree(3));
 
@@ -130,6 +170,19 @@ fn operation_limit_rejects_subtree_removal_without_publishing_partial_state() {
     assert_eq!(
         reconciler(1).prepare(&current, &tree(vec![])),
         Err(ReconcileError::OperationLimitExceeded { limit: 1 })
+    );
+    assert_eq!(current.revision().get(), 1);
+    assert_eq!(child_ids(&current), before_ids);
+}
+
+#[test]
+fn operation_limit_rejects_multiple_removals_atomically() {
+    let current = snapshot(&keyed_tree(&["a", "b", "c", "d"]));
+    let before_ids = child_ids(&current);
+
+    assert_eq!(
+        reconciler(3).prepare(&current, &keyed_tree(&["b", "d"])),
+        Err(ReconcileError::OperationLimitExceeded { limit: 3 })
     );
     assert_eq!(current.revision().get(), 1);
     assert_eq!(child_ids(&current), before_ids);
