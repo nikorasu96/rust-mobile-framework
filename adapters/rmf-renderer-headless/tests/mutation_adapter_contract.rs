@@ -216,3 +216,30 @@ fn applies_multiple_keyed_insertions_and_confirms_exact_host_state() {
     assert_eq!(coordinator.applier().node_count(), 6);
     assert_eq!(coordinator.applier().metrics().edges(), 5);
 }
+
+#[test]
+fn applies_multiple_keyed_removals_and_confirms_exact_host_state() {
+    let reconciler = reconciler();
+    let mut coordinator = CommitCoordinator::new(HeadlessMutationAdapter::default());
+    apply_candidate(
+        &mut coordinator,
+        reconciler,
+        &candidate(vec![
+            text("a", "A"),
+            text("b", "B"),
+            text("c", "C"),
+            text("d", "D"),
+            text("e", "E"),
+        ]),
+    );
+
+    apply_candidate(
+        &mut coordinator,
+        reconciler,
+        &candidate(vec![text("b", "B"), text("d", "D")]),
+    );
+
+    assert_eq!(coordinator.applier().revision(), 2);
+    assert_eq!(coordinator.applier().node_count(), 3);
+    assert_eq!(coordinator.applier().metrics().edges(), 2);
+}
