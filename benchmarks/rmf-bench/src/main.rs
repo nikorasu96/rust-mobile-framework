@@ -314,9 +314,7 @@ fn build_keyed_sibling_tree(
     Ok(ValidatedTree::new(root, CandidateLimits::default())?)
 }
 
-fn build_reversed_keyed_sibling_tree(
-    child_count: usize,
-) -> Result<ValidatedTree, Box<dyn Error>> {
+fn build_reversed_keyed_sibling_tree(child_count: usize) -> Result<ValidatedTree, Box<dyn Error>> {
     let children = (0..child_count)
         .rev()
         .map(|index| {
