@@ -74,7 +74,7 @@ impl Display for ReconcileError {
                 )
             }
             Self::StructuralChangeUnsupported => formatter.write_str(
-                "multiple keyed replacements, mixed keyed changes and unkeyed structural changes are not implemented",
+                "mixed keyed changes and unkeyed structural changes are not implemented",
             ),
             Self::InvariantViolation => formatter.write_str("reconciliation invariant violated"),
         }
@@ -221,11 +221,11 @@ impl CommitBuilder {
         if previous.len() != candidate.len() {
             return Err(ReconcileError::StructuralChangeUnsupported);
         }
-        if let Some(replacement) = detect_single_keyed_replacement(previous, candidate) {
-            return self.reconcile_single_replacement(
+        if let Some(replacements) = plan_keyed_replacements(previous, candidate) {
+            return self.reconcile_keyed_replacements(
                 previous_parent,
                 candidate_parent,
-                replacement,
+                &replacements,
             );
         }
 
@@ -263,36 +263,37 @@ impl CommitBuilder {
         Ok(children)
     }
 
-    fn reconcile_single_replacement(
+    fn reconcile_keyed_replacements(
         &mut self,
         previous_parent: &CommittedNode,
         candidate_parent: &DeclarativeNode,
-        replacement: usize,
+        replacements: &[bool],
     ) -> Result<Vec<CommittedNode>, ReconcileError> {
         let previous = previous_parent.children();
         let candidate = candidate_parent.children();
-        let removed = &previous[replacement];
-
-        self.push(Mutation::RemoveChild {
-            parent_id: previous_parent.node_id(),
-            child_id: removed.node_id(),
-            index: checked_index(replacement)?,
-        })?;
-        self.delete_subtree(removed)?;
-        let inserted = self.create_subtree(&candidate[replacement])?;
-        self.push(Mutation::InsertChild {
-            parent_id: previous_parent.node_id(),
-            child_id: inserted.node_id(),
-            index: checked_index(replacement)?,
-        })?;
-
         let mut children = Vec::with_capacity(candidate.len());
-        for (index, candidate_child) in candidate.iter().enumerate() {
-            if index == replacement {
-                children.push(inserted.clone());
-            } else {
+        for (index, (candidate_child, replacement)) in
+            candidate.iter().zip(replacements).enumerate()
+        {
+            if !*replacement {
                 children.push(self.reconcile_node(&previous[index], candidate_child)?);
+                continue;
             }
+
+            let removed = &previous[index];
+            self.push(Mutation::RemoveChild {
+                parent_id: previous_parent.node_id(),
+                child_id: removed.node_id(),
+                index: checked_index(index)?,
+            })?;
+            self.delete_subtree(removed)?;
+            let inserted = self.create_subtree(candidate_child)?;
+            self.push(Mutation::InsertChild {
+                parent_id: previous_parent.node_id(),
+                child_id: inserted.node_id(),
+                index: checked_index(index)?,
+            })?;
+            children.push(inserted);
         }
         Ok(children)
     }
@@ -618,30 +619,47 @@ fn plan_keyed_removals(
     }
 }
 
-fn detect_single_keyed_replacement(
+fn plan_keyed_replacements(
     previous: &[CommittedNode],
     candidate: &[DeclarativeNode],
-) -> Option<usize> {
+) -> Option<Vec<bool>> {
     if previous.len() != candidate.len() {
         return None;
     }
 
-    let mut replacement = None;
+    let mut previous_by_key = HashMap::with_capacity(previous.len());
+    for (index, child) in previous.iter().enumerate() {
+        if previous_by_key.insert(child.key()?.as_str(), index).is_some() {
+            return None;
+        }
+    }
+
+    let mut has_replacement = false;
+    let mut replacements = Vec::with_capacity(candidate.len());
     for (index, (previous_child, candidate_child)) in previous.iter().zip(candidate).enumerate() {
         let compatible = previous_child.key() == candidate_child.key()
             && previous_child.kind() == candidate_child.kind();
         if compatible {
+            replacements.push(false);
             continue;
         }
-        if replacement.is_some()
-            || previous_child.key().is_none()
-            || candidate_child.key().is_none()
+
+        let candidate_key = candidate_child.key()?;
+        if previous_by_key
+            .get(candidate_key.as_str())
+            .is_some_and(|previous_index| *previous_index != index)
         {
             return None;
         }
-        replacement = Some(index);
+        has_replacement = true;
+        replacements.push(true);
     }
-    replacement
+
+    if has_replacement {
+        Some(replacements)
+    } else {
+        None
+    }
 }
 
 fn single_move_matches(
