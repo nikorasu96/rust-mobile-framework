@@ -74,7 +74,7 @@ impl Display for ReconcileError {
                 )
             }
             Self::StructuralChangeUnsupported => formatter.write_str(
-                "multiple keyed removals or replacements, mixed keyed changes and unkeyed structural changes are not implemented",
+                "multiple keyed replacements, mixed keyed changes and unkeyed structural changes are not implemented",
             ),
             Self::InvariantViolation => formatter.write_str("reconciliation invariant violated"),
         }
@@ -215,8 +215,8 @@ impl CommitBuilder {
         if candidate.len() > previous.len() {
             return self.reconcile_keyed_insertions(previous_parent, candidate_parent);
         }
-        if previous.len() == candidate.len().saturating_add(1) {
-            return self.reconcile_single_removal(previous_parent, candidate_parent);
+        if previous.len() > candidate.len() {
+            return self.reconcile_keyed_removals(previous_parent, candidate_parent);
         }
         if previous.len() != candidate.len() {
             return Err(ReconcileError::StructuralChangeUnsupported);
@@ -328,32 +328,29 @@ impl CommitBuilder {
         Ok(children)
     }
 
-    fn reconcile_single_removal(
+    fn reconcile_keyed_removals(
         &mut self,
         previous_parent: &CommittedNode,
         candidate_parent: &DeclarativeNode,
     ) -> Result<Vec<CommittedNode>, ReconcileError> {
         let previous = previous_parent.children();
         let candidate = candidate_parent.children();
-        let removal = detect_single_keyed_removal(previous, candidate)
+        let matches = plan_keyed_removals(previous, candidate)
             .ok_or(ReconcileError::StructuralChangeUnsupported)?;
-        let removed = &previous[removal];
-
-        self.push(Mutation::RemoveChild {
-            parent_id: previous_parent.node_id(),
-            child_id: removed.node_id(),
-            index: checked_index(removal)?,
-        })?;
-        self.delete_subtree(removed)?;
-
         let mut children = Vec::with_capacity(candidate.len());
-        for (candidate_index, candidate_child) in candidate.iter().enumerate() {
-            let previous_index = if candidate_index < removal {
-                candidate_index
-            } else {
-                candidate_index + 1
-            };
-            children.push(self.reconcile_node(&previous[previous_index], candidate_child)?);
+
+        for (previous_child, candidate_index) in previous.iter().zip(matches) {
+            if let Some(candidate_index) = candidate_index {
+                children.push(self.reconcile_node(previous_child, &candidate[candidate_index])?);
+                continue;
+            }
+
+            self.push(Mutation::RemoveChild {
+                parent_id: previous_parent.node_id(),
+                child_id: previous_child.node_id(),
+                index: checked_index(children.len())?,
+            })?;
+            self.delete_subtree(previous_child)?;
         }
 
         Ok(children)
@@ -588,38 +585,32 @@ fn plan_keyed_insertions(
     }
 }
 
-fn detect_single_keyed_removal(
+fn plan_keyed_removals(
     previous: &[CommittedNode],
     candidate: &[DeclarativeNode],
-) -> Option<usize> {
-    if previous.len() != candidate.len().checked_add(1)? {
+) -> Option<Vec<Option<usize>>> {
+    if previous.len() <= candidate.len() {
         return None;
     }
 
-    let mut previous_index = 0;
     let mut candidate_index = 0;
-    let mut removal = None;
-
-    while previous_index < previous.len() {
-        let keys_match = candidate
-            .get(candidate_index)
-            .is_some_and(|candidate_child| {
-                previous[previous_index].key().is_some()
-                    && previous[previous_index].key() == candidate_child.key()
-            });
-        if keys_match {
-            previous_index += 1;
+    let mut matches = Vec::with_capacity(previous.len());
+    for previous_child in previous {
+        let previous_key = previous_child.key()?;
+        let matching_candidate = candidate.get(candidate_index).is_some_and(|candidate_child| {
+            candidate_child.key() == Some(previous_key)
+                && candidate_child.kind() == previous_child.kind()
+        });
+        if matching_candidate {
+            matches.push(Some(candidate_index));
             candidate_index += 1;
-        } else if removal.is_none() && previous[previous_index].key().is_some() {
-            removal = Some(previous_index);
-            previous_index += 1;
         } else {
-            return None;
+            matches.push(None);
         }
     }
 
     if candidate_index == candidate.len() {
-        removal
+        Some(matches)
     } else {
         None
     }
