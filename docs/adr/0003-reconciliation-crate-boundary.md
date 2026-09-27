@@ -1,6 +1,6 @@
 # ADR-0003: Reconciliation crate boundary and public type contract
 
-- Status: Accepted; general keyed reorder, pure multi-insert/remove and single replace implemented
+- Status: Accepted; general keyed reorder and pure multi-insert/remove/replace implemented
 - Date: 2026-09-20
 - Depends on: ADR-0001 and ADR-0002
 
@@ -14,8 +14,8 @@ domain. The executable v1 fixtures now provide enough evidence to freeze a small
 This decision defines the implementation target. The crate now supports initial mounting and
 property reconciliation while preserving identities for structurally stable keyed or positional
 nodes, arbitrary permutations of fully keyed compatible siblings, pure keyed insertion and removal
-sets, plus one keyed replacement per sibling list. Multiple replacements, mixed structural changes
-and unkeyed reorders are rejected explicitly rather than simulated by replacement or full remount.
+sets, plus pure positional keyed replacement sets. Mixed structural changes and unkeyed reorders are
+rejected explicitly rather than simulated by replacement or full remount.
 
 ## Decision
 
