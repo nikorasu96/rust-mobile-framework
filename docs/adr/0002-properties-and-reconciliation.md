@@ -96,6 +96,9 @@ A batch is immutable and topologically ordered:
    keyed siblings retain identity and relative order.
 7. Pure keyed removals are emitted in previous order. Each `RemoveChild` uses its live index after
    earlier removals, then the detached subtree is deleted descendant-first.
+8. Pure keyed replacements are emitted in sibling order. Each incompatible subtree is detached and
+   deleted descendant-first before its replacement receives fresh identities and is attached at the
+   same index. A key already present at another prior index is movement, not replacement.
 
 An adapter validates the complete batch and base revision before touching host views.
 Logical publication is atomic. Native UI toolkits are not assumed to provide rollback;
@@ -115,7 +118,8 @@ never be reported as a committed revision.
 ### 7. Complexity and defensive limits
 
 Keyed sibling identity matching targets expected `O(n)` time using a temporary index. Pure keyed
-insertion and removal planning is `O(n + m)` for the previous and candidate sibling counts. General
+insertion, removal and replacement planning is `O(n + m)` for the previous and candidate sibling
+counts. General
 move-position planning may use `O(n log n)` time and `O(n)` temporary memory through explicit
 order statistics. Unkeyed matching is linear by position. Implementations must not contain an
 accidental quadratic sibling scan.

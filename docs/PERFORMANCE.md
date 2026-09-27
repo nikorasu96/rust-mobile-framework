@@ -29,6 +29,7 @@ cargo run --release -p rmf-bench
 | One keyed removal, 1,000 initial siblings | <= 5 ms | Pure reconciliation, host release build |
 | 100 keyed removals, 1,000 initial siblings | <= 5 ms | Linear pure-removal planning |
 | One keyed replacement, 1,000 siblings | <= 5 ms | Pure reconciliation, host release build |
+| 100 keyed replacements, 1,000 siblings | <= 5 ms | Linear pure-replacement planning |
 | Prepare and promote unchanged 1,000-sibling commit | <= 1 ms | Reconciliation plus no-op runtime port, host release build |
 
 These are engineering guardrails, not Android product SLOs. Baseline hardware, warmup,
@@ -43,8 +44,8 @@ one expected constant-time lookup for each keyed candidate. A deterministic regr
 reverses 2,048 keyed siblings and verifies that every existing identity is selected once.
 Production Rust gates exercise one last-to-first keyed movement, a full reverse-order keyed
 permutation, one middle keyed insertion, 100 distributed keyed insertions, one middle removal,
-100 distributed keyed removals and one replacement across 1,000 siblings for 100 preparations
-each. General reorder uses expected
+100 distributed keyed removals, one replacement and 100 distributed keyed replacements across
+1,000 siblings for 100 preparations each. General reorder uses expected
 constant-time hash lookup without iterating
 the randomized map and a Fenwick order-statistics index, giving `O(n log n)` planning and `O(n)`
 temporary memory. The runtime gate also
