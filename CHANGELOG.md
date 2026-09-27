@@ -8,6 +8,8 @@ All notable changes follow semantic versioning once a public API is released.
   with exact headless-host and operation-budget contracts.
 - Added linear pure keyed multi-insertion reconciliation with stable existing identities and
   deterministic create/insert ordering.
+- Added linear pure keyed multi-removal reconciliation with live detach indices, stable surviving
+  identities and descendant-first subtree deletion.
 - **Breaking:** bumped the pre-alpha workspace to `0.2.0-alpha.1` and removed the
   caller-identified `UiTree`, `Renderer`, `Runtime::mount` and `HeadlessRenderer` bootstrap APIs.
   ADR-0012 contains the source migration table.
