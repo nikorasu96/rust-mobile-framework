@@ -128,9 +128,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         commit_promotion_average,
         COMMIT_PROMOTION_BUDGET,
     )?;
-    if host_metrics.nodes() != NODE_COUNT + 1 || host_metrics.edges() != NODE_COUNT {
-        return Err(Box::new(UnexpectedHostMetrics));
-    }
+    validate_host_metrics(host_metrics.nodes(), host_metrics.edges())?;
 
     println!("budget_status=passed");
     Ok(())
@@ -138,6 +136,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn print_general_keyed_reorder(average: Duration) {
     println!("general_keyed_reorder_average_ns={}", average.as_nanos());
+}
+
+fn validate_host_metrics(nodes: usize, edges: usize) -> Result<(), UnexpectedHostMetrics> {
+    if nodes == NODE_COUNT + 1 && edges == NODE_COUNT {
+        Ok(())
+    } else {
+        Err(UnexpectedHostMetrics)
+    }
 }
 
 fn enforce_general_keyed_reorder(average: Duration) -> Result<(), BudgetExceeded> {
