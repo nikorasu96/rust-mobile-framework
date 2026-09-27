@@ -139,10 +139,7 @@ fn report_multiple_keyed_insertions(average: Duration) -> Result<(), BudgetExcee
 }
 
 fn report_multiple_keyed_removals(average: Duration) -> Result<(), BudgetExceeded> {
-    println!(
-        "multiple_keyed_removals_average_ns={}",
-        average.as_nanos()
-    );
+    println!("multiple_keyed_removals_average_ns={}", average.as_nanos());
     enforce_budget(
         "multiple keyed removals average",
         average,
