@@ -1,7 +1,7 @@
 # Increment 50: Multiple keyed insertions
 
 - Date: 2026-09-26
-- Status: Pending repository CI
+- Status: Complete
 
 ## Acceptance criteria
 
@@ -26,7 +26,17 @@ complexity is `O(n + m)` and its result does not depend on hashing or unordered 
 
 ## Validation evidence
 
-Repository CI evidence will be recorded before this increment is merged.
+GitHub Actions run
+[`36284496400`](https://github.com/nikorasu96/rust-mobile-framework/actions/runs/36284496400)
+passed with the pinned Rust 1.85 toolchain:
+
+- `cargo fmt --all --check`
+- workspace Clippy with warnings denied
+- 58 Rust tests
+- workspace rustdoc with warnings denied
+- architecture policy and 85 independent contract regressions
+- release performance gate: 109,761 ns average for 100 distributed insertions among 1,000 final
+  siblings (5,000,000 ns budget)
 
 ## Remaining limitations
 
