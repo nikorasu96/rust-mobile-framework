@@ -4,6 +4,8 @@ All notable changes follow semantic versioning once a public API is released.
 
 ## Unreleased
 
+- Added deterministic `O(n log n)` general reorder planning for fully keyed compatible siblings,
+  with exact headless-host and operation-budget contracts.
 - **Breaking:** bumped the pre-alpha workspace to `0.2.0-alpha.1` and removed the
   caller-identified `UiTree`, `Renderer`, `Runtime::mount` and `HeadlessRenderer` bootstrap APIs.
   ADR-0012 contains the source migration table.

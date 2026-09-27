@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 use std::num::{NonZeroU32, NonZeroU64};
@@ -73,7 +74,7 @@ impl Display for ReconcileError {
                 )
             }
             Self::StructuralChangeUnsupported => formatter.write_str(
-                "multiple structural replacements, insertions, removals or child reorders are not implemented",
+                "multiple keyed insertions, removals or replacements and unkeyed structural changes are not implemented",
             ),
             Self::InvariantViolation => formatter.write_str("reconciliation invariant violated"),
         }
@@ -228,29 +229,35 @@ impl CommitBuilder {
             );
         }
 
-        let movement = if keys_match_in_order(previous, candidate) {
-            None
-        } else {
-            Some(
-                detect_single_keyed_move(previous, candidate)
-                    .ok_or(ReconcileError::StructuralChangeUnsupported)?,
-            )
-        };
-
-        if let Some(movement) = movement {
+        let previous_indices = if keys_match_in_order(previous, candidate) {
+            (0..candidate.len()).collect()
+        } else if let Some(movement) = detect_single_keyed_move(previous, candidate) {
             self.push(Mutation::MoveChild {
                 parent_id: previous_parent.node_id(),
                 child_id: previous[movement.from].node_id(),
                 from: checked_index(movement.from)?,
                 to: checked_index(movement.to)?,
             })?;
-        }
+            (0..candidate.len())
+                .map(|candidate_index| movement.previous_index(candidate_index))
+                .collect()
+        } else {
+            let plan = plan_keyed_reorder(previous, candidate)
+                .ok_or(ReconcileError::StructuralChangeUnsupported)?;
+            for movement in &plan.movements {
+                self.push(Mutation::MoveChild {
+                    parent_id: previous_parent.node_id(),
+                    child_id: previous[movement.previous_index].node_id(),
+                    from: checked_index(movement.from)?,
+                    to: checked_index(movement.to)?,
+                })?;
+            }
+            plan.previous_indices
+        };
 
         let mut children = Vec::with_capacity(candidate.len());
         for (candidate_index, candidate_child) in candidate.iter().enumerate() {
-            let previous_index = movement.map_or(candidate_index, |movement| {
-                movement.previous_index(candidate_index)
-            });
+            let previous_index = previous_indices[candidate_index];
             children.push(self.reconcile_node(&previous[previous_index], candidate_child)?);
         }
         Ok(children)
@@ -390,6 +397,59 @@ struct SingleMove {
     to: usize,
 }
 
+struct PlannedMove {
+    previous_index: usize,
+    from: usize,
+    to: usize,
+}
+
+struct ReorderPlan {
+    previous_indices: Vec<usize>,
+    movements: Vec<PlannedMove>,
+}
+
+struct FenwickTree {
+    values: Vec<usize>,
+}
+
+impl FenwickTree {
+    fn full(length: usize) -> Self {
+        let mut tree = Self {
+            values: vec![0; length.saturating_add(1)],
+        };
+        for index in 0..length {
+            tree.increment(index);
+        }
+        tree
+    }
+
+    fn increment(&mut self, index: usize) {
+        let mut position = index.saturating_add(1);
+        while position < self.values.len() {
+            self.values[position] += 1;
+            position = position.saturating_add(position & position.wrapping_neg());
+        }
+    }
+
+    fn remove(&mut self, index: usize) {
+        let mut position = index.saturating_add(1);
+        while position < self.values.len() {
+            self.values[position] -= 1;
+            position = position.saturating_add(position & position.wrapping_neg());
+        }
+    }
+
+    fn count_before(&self, index: usize) -> usize {
+        let mut position = index;
+        let mut count = 0;
+        while position > 0 {
+            count += self.values[position];
+            position -= position & position.wrapping_neg();
+        }
+        count
+    }
+}
+
 impl SingleMove {
     const fn previous_index(self, candidate_index: usize) -> usize {
         if candidate_index == self.to {
@@ -451,6 +511,52 @@ fn detect_single_keyed_move(
             })
     });
     moved_later.filter(|movement| single_move_matches(previous, candidate, *movement))
+}
+
+fn plan_keyed_reorder(
+    previous: &[CommittedNode],
+    candidate: &[DeclarativeNode],
+) -> Option<ReorderPlan> {
+    if previous.len() != candidate.len() {
+        return None;
+    }
+
+    let mut previous_by_key = HashMap::with_capacity(previous.len());
+    for (index, child) in previous.iter().enumerate() {
+        let key = child.key()?.as_str();
+        if previous_by_key.insert(key, index).is_some() {
+            return None;
+        }
+    }
+
+    let mut remaining = FenwickTree::full(previous.len());
+    let mut matched = vec![false; previous.len()];
+    let mut previous_indices = Vec::with_capacity(candidate.len());
+    let mut movements = Vec::new();
+
+    for (target_index, candidate_child) in candidate.iter().enumerate() {
+        let previous_index = *previous_by_key.get(candidate_child.key()?.as_str())?;
+        if matched[previous_index] || previous[previous_index].kind() != candidate_child.kind() {
+            return None;
+        }
+        matched[previous_index] = true;
+
+        let from = target_index.checked_add(remaining.count_before(previous_index))?;
+        if from != target_index {
+            movements.push(PlannedMove {
+                previous_index,
+                from,
+                to: target_index,
+            });
+        }
+        remaining.remove(previous_index);
+        previous_indices.push(previous_index);
+    }
+
+    Some(ReorderPlan {
+        previous_indices,
+        movements,
+    })
 }
 
 fn detect_single_keyed_insertion(

@@ -4,12 +4,14 @@ Pure core service that assigns runtime node identities and prepares immutable sn
 deterministic host mutation batches. Its only dependency is `rmf-core`; it contains no renderer,
 runtime orchestration, Android, JNI or TypeScript concerns.
 
-The current implementation supports initial mounting, property updates, and one keyed child move,
-insertion, removal or replacement per sibling list. Every structural path uses bounded linear scans and
-preserves matching runtime identities. Removal detaches every subtree edge before deleting nodes
+The current implementation supports initial mounting, property updates, arbitrary permutations of
+fully keyed compatible siblings, and one keyed insertion, removal or replacement per sibling list.
+General reorder planning combines expected constant-time key lookup with a Fenwick order-statistics
+index, using `O(n log n)` time and `O(n)` memory without depending on hash iteration order. Matching
+runtime identities are preserved. Removal detaches every subtree edge before deleting nodes
 descendant-first. Replacement always allocates fresh identities for incompatible keyed nodes.
-Multiple structural changes and reorders requiring multiple moves remain typed errors until their
-strategy is implemented and benchmarked.
+Multiple insertions, removals, replacements, mixed structural changes and unkeyed reorders remain
+typed errors.
 
 Ownership rules:
 
