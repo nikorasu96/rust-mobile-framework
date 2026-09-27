@@ -22,6 +22,7 @@ const GENERAL_KEYED_REORDER_BUDGET: Duration = Duration::from_millis(10);
 const KEYED_INSERTION_BUDGET: Duration = Duration::from_millis(5);
 const MULTIPLE_KEYED_INSERTION_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_REMOVAL_BUDGET: Duration = Duration::from_millis(5);
+const MULTIPLE_KEYED_REMOVAL_BUDGET: Duration = Duration::from_millis(5);
 const KEYED_REPLACEMENT_BUDGET: Duration = Duration::from_millis(5);
 const COMMIT_PROMOTION_BUDGET: Duration = Duration::from_millis(1);
 
@@ -40,22 +41,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mount_average = mount_started.elapsed() / ITERATIONS;
     let host_metrics = mount_candidate(reconciler, &candidate)?.metrics();
 
-    let initial_candidate = build_keyed_sibling_tree(NODE_COUNT, false)?;
-    let snapshot = reconciler
-        .prepare(&SurfaceSnapshot::empty(), &initial_candidate)?
-        .into_snapshot();
-    let moved_candidate = build_keyed_sibling_tree(NODE_COUNT, true)?;
-    let keyed_move_started = Instant::now();
-    for _ in 0..ITERATIONS {
-        let prepared = reconciler.prepare(black_box(&snapshot), black_box(&moved_candidate))?;
-        black_box(prepared);
-    }
-    let keyed_move_average = keyed_move_started.elapsed() / ITERATIONS;
+    let keyed_move_average = measure_keyed_move(reconciler)?;
     let general_keyed_reorder_average = measure_general_keyed_reorder(reconciler)?;
 
     let keyed_insertion_average = measure_keyed_insertion(reconciler)?;
     let multiple_keyed_insertion_average = measure_multiple_keyed_insertions(reconciler)?;
     let keyed_removal_average = measure_keyed_removal(reconciler)?;
+    let multiple_keyed_removal_average = measure_multiple_keyed_removals(reconciler)?;
 
     let keyed_replacement_average = measure_keyed_replacement(reconciler)?;
     let commit_promotion_average = measure_commit_promotion()?;
@@ -78,6 +70,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "keyed_removal_average_ns={}",
         keyed_removal_average.as_nanos()
     );
+    report_multiple_keyed_removals(multiple_keyed_removal_average)?;
     println!(
         "keyed_replacement_average_ns={}",
         keyed_replacement_average.as_nanos()
@@ -142,6 +135,15 @@ fn report_multiple_keyed_insertions(average: Duration) -> Result<(), BudgetExcee
         "multiple keyed insertions average",
         average,
         MULTIPLE_KEYED_INSERTION_BUDGET,
+    )
+}
+
+fn report_multiple_keyed_removals(average: Duration) -> Result<(), BudgetExceeded> {
+    println!("multiple_keyed_removals_average_ns={}", average.as_nanos());
+    enforce_budget(
+        "multiple keyed removals average",
+        average,
+        MULTIPLE_KEYED_REMOVAL_BUDGET,
     )
 }
 
@@ -211,6 +213,20 @@ fn measure_candidate_validation(
     Ok(started.elapsed() / ITERATIONS)
 }
 
+fn measure_keyed_move(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {
+    let base = build_keyed_sibling_tree(NODE_COUNT, false)?;
+    let snapshot = reconciler
+        .prepare(&SurfaceSnapshot::empty(), &base)?
+        .into_snapshot();
+    let candidate = build_keyed_sibling_tree(NODE_COUNT, true)?;
+    let started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared = reconciler.prepare(black_box(&snapshot), black_box(&candidate))?;
+        black_box(prepared);
+    }
+    Ok(started.elapsed() / ITERATIONS)
+}
+
 fn measure_keyed_insertion(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {
     let base = build_keyed_insertion_tree(NODE_COUNT, false)?;
     let snapshot = reconciler
@@ -267,6 +283,20 @@ fn measure_keyed_removal(reconciler: Reconciler) -> Result<Duration, Box<dyn Err
     Ok(started.elapsed() / ITERATIONS)
 }
 
+fn measure_multiple_keyed_removals(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {
+    let base = build_multiple_keyed_removal_tree(NODE_COUNT, false)?;
+    let snapshot = reconciler
+        .prepare(&SurfaceSnapshot::empty(), &base)?
+        .into_snapshot();
+    let candidate = build_multiple_keyed_removal_tree(NODE_COUNT, true)?;
+    let started = Instant::now();
+    for _ in 0..ITERATIONS {
+        let prepared = reconciler.prepare(black_box(&snapshot), black_box(&candidate))?;
+        black_box(prepared);
+    }
+    Ok(started.elapsed() / ITERATIONS)
+}
+
 fn measure_keyed_replacement(reconciler: Reconciler) -> Result<Duration, Box<dyn Error>> {
     let base = build_keyed_replacement_tree(NODE_COUNT, false)?;
     let snapshot = reconciler
@@ -315,6 +345,27 @@ fn build_keyed_removal_tree(
     }
     let children = keys
         .into_iter()
+        .map(|index| {
+            DeclarativeNode::new(
+                ComponentKind::Text,
+                Some(Key::new(index.to_string())),
+                PropertySet::empty(),
+                vec![],
+            )
+        })
+        .collect();
+    let root = DeclarativeNode::new(ComponentKind::View, None, PropertySet::empty(), children);
+    Ok(ValidatedTree::new(root, CandidateLimits::default())?)
+}
+
+fn build_multiple_keyed_removal_tree(
+    initial_child_count: usize,
+    remove_children: bool,
+) -> Result<ValidatedTree, Box<dyn Error>> {
+    const REMOVAL_INTERVAL: usize = 10;
+
+    let children = (0..initial_child_count)
+        .filter(|index| !remove_children || index % REMOVAL_INTERVAL != 0)
         .map(|index| {
             DeclarativeNode::new(
                 ComponentKind::Text,

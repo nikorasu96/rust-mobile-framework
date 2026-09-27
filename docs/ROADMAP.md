@@ -26,6 +26,7 @@
 - [x] Implement and benchmark deterministic single-child keyed insertion in Rust.
 - [x] Implement and benchmark deterministic pure keyed multi-insertion in Rust.
 - [x] Implement and benchmark deterministic single-child keyed removal in Rust.
+- [x] Implement and benchmark deterministic pure keyed multi-removal in Rust.
 - [x] Implement and benchmark deterministic single-child keyed replacement in Rust.
 - [x] Specify commit application, promotion and full-remount recovery semantics.
 - [x] Migrate the headless example to declarative reconciliation and atomic commit application.

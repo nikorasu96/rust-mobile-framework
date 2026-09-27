@@ -10,7 +10,7 @@ This file records observed capability, not branding or claimed drop-in compatibi
 | Stable-tree property updates | Rust implementation | identity-preservation, set/remove and atomic-rejection Rust tests | No general multi-change reconciliation |
 | Keyed child reorder | Rust implementation | single/general move identity, determinism, operation-limit and exact headless-host contracts | Fully keyed compatible siblings only; no mixed insert/remove or unkeyed reorder |
 | Keyed child insertion | Rust implementation | single/multiple identity, deterministic order, atomic-limit and exact headless-host contracts | Pure keyed insertion only; no unkeyed or mixed structural change |
-| Keyed child removal | Partial Rust implementation | identity, subtree ordering and atomic-limit Rust tests | One keyed removal per sibling list; no unkeyed or multiple removal |
+| Keyed child removal | Rust implementation | single/multiple identity, live-index ordering, descendant-first deletion, atomic-limit and exact headless-host contracts | Pure keyed removal only; no unkeyed or mixed structural change |
 | Keyed child replacement | Partial Rust implementation | kind/key replacement, fresh identity, ordering and atomic-limit Rust tests | One keyed replacement per sibling list; no unkeyed or multiple replacement |
 | Caller-identified runtime mount | Removed in `0.2.0-alpha.1` | ADR-0012 and migrated example, benchmark and contracts | Replacement committed pipeline is intentionally not source compatible |
 | Commit application and recovery | Rust implementation | `BatchApplier`, `SnapshotRemounter`, `CommitCoordinator`, Rust contract tests, ADR-0004, eight reviewed fixtures, 800 generated actions and 567 exhaustive transitions | No platform adapter, real UI-thread execution or concurrent executor stress |
@@ -24,7 +24,7 @@ This file records observed capability, not branding or claimed drop-in compatibi
 | Deterministic headless host | Rust implementation | atomic mutation/remount adapter, logical host metrics, Rust contracts, executable example and committed-path benchmark | Diagnostic host only; not visual rendering |
 | Android rendering | Not started | — | No JNI/Kotlin layer |
 | TypeScript/React API | Not started | — | No JS engine or bindings |
-| Reconciliation | Partial Rust implementation | ADR-0002, compiled initial/property/general-reorder/insertion/removal/replacement contracts, runtime batch application and recovery, thirty-one v1 fixtures and 200 generated transitions | No multiple removals/replacements or mixed structural changes |
+| Reconciliation | Partial Rust implementation | ADR-0002, compiled initial/property/general-reorder/insertion/removal/replacement contracts, runtime batch application and recovery, thirty-one v1 fixtures and 200 generated transitions | No multiple replacements or mixed structural changes |
 | Typed properties | Rust implementation | Versioned `View`/`Text` schema, candidate validation and reconciliation contracts | Initial schema remains intentionally small |
 | Layout and styling | Not started | — | No layout engine |
 | Events and accessibility | Contract seed | Typed `CLICK` FFI body with node identity and sequence | No listener, native dispatch, accessibility semantics or state integration |
