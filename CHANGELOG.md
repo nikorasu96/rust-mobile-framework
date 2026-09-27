@@ -10,6 +10,8 @@ All notable changes follow semantic versioning once a public API is released.
   deterministic create/insert ordering.
 - Added linear pure keyed multi-removal reconciliation with live detach indices, stable surviving
   identities and descendant-first subtree deletion.
+- Added linear pure keyed multi-replacement reconciliation with fresh incompatible identities and
+  explicit rejection of replacement combined with movement.
 - **Breaking:** bumped the pre-alpha workspace to `0.2.0-alpha.1` and removed the
   caller-identified `UiTree`, `Renderer`, `Runtime::mount` and `HeadlessRenderer` bootstrap APIs.
   ADR-0012 contains the source migration table.
